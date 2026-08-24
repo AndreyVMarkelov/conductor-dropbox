@@ -1,4 +1,4 @@
-package java.dropbox.conductor;
+package com.dropbox.conductor;
 
 import org.junit.jupiter.api.Test;
 
