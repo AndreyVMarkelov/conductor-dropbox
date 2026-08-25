@@ -22,7 +22,8 @@ public class WorkerApplication {
                                 new UploadFileWorker(dropbox),
                                 new DownloadFileWorker(dropbox),
                                 new MoveWorker(dropbox),
-                                new DeleteWorker(dropbox)))
+                                new DeleteWorker(dropbox),
+                                new ListFolderWorker(dropbox)))
                 .withThreadCount(2)
                 .build();
         configurer.init();

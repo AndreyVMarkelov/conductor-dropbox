@@ -22,7 +22,7 @@ public final class DropboxMetadataOutput {
             output.put("id", file.getId());
             output.put("rev", file.getRev());
             output.put("size", file.getSize());
-            output.put("contentHash", file.getContentHash());
+            putIfNotNull(output, "contentHash", file.getContentHash());
         } else if (metadata instanceof FolderMetadata folder) {
             output.put("type", "folder");
             output.put("id", folder.getId());
