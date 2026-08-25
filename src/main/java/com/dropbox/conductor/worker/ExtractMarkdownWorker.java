@@ -13,8 +13,8 @@ public final class ExtractMarkdownWorker implements Worker {
     public static final String TASK_NAME = "dropbox_extract_markdown";
 
     private static final String OPERATION = "extract_markdown";
-    private static final int MAX_ATTEMPTS = 30;
-    private static final long DEFAULT_POLL_DELAY_MS = 1000;
+    private static final int MAX_ATTEMPTS = 24;
+    private static final long DEFAULT_POLL_DELAY_MS = 5000;
 
     private final DbxClientV2 dropbox;
     private final long pollDelayMs;
