@@ -1,0 +1,59 @@
+{
+    "name": "dropbox_process_folder",
+    "description": "Process Dropbox files sequentially",
+    "version": 1,
+    "schemaVersion": 2,
+    "restartable": true,
+    "inputParameters": [
+        "path"
+    ],
+    "tasks": [
+        {
+            "name": "dropbox_list_folder",
+            "taskReferenceName": "list_folder",
+            "type": "SIMPLE",
+            "inputParameters": {
+                "path": "${workflow.input.path}",
+                "recursive": false,
+                "includeDeleted": false
+            }
+        },
+        {
+            "name": "process_entries",
+            "taskReferenceName": "process_entries",
+            "type": "DO_WHILE",
+            "items": "${list_folder.output.entries}",
+            "loopCondition": "true",
+            "loopOver": [
+                {
+                    "name": "entry_type",
+                    "taskReferenceName": "entry_type",
+                    "type": "SWITCH",
+                    "inputParameters": {
+                        "type": "${process_entries.output.loopItem.type}"
+                    },
+                    "evaluatorType": "value-param",
+                    "expression": "type",
+                    "decisionCases": {
+                        "file": [
+                            {
+                                "name": "dropbox_extract_markdown",
+                                "taskReferenceName": "extract_markdown",
+                                "type": "SIMPLE",
+                                "inputParameters": {
+                                    "fileId": "${process_entries.output.loopItem.id}"
+                                }
+                            }
+                        ]
+                    },
+                    "defaultCase": []
+                }
+            ]
+        }
+    ],
+    "outputParameters": {
+        "entries": "${list_folder.output.entries}",
+        "iterations": "${process_entries.output.iteration}"
+    }
+}
+

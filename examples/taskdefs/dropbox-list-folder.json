@@ -1,0 +1,14 @@
+{
+    "name": "dropbox_list_folder",
+    "description": "List files and folders in Dropbox",
+    "retryCount": 3,
+    "retryLogic": "EXPONENTIAL_BACKOFF",
+    "retryDelaySeconds": 1,
+    "timeoutSeconds": 120,
+    "timeoutPolicy": "TIME_OUT_WF",
+    "responseTimeoutSeconds": 60,
+    "backoffScaleFactor": 2,
+    "maxRetryDelaySeconds": 30,
+    "backoffJitterMs": 500
+}
+

@@ -1,0 +1,9 @@
+{
+    "name": "dropbox_extract_markdown",
+    "description": "Extract Markdown from a Dropbox file using Riviera",
+    "retryCount": 0,
+    "timeoutSeconds": 180,
+    "timeoutPolicy": "TIME_OUT_WF",
+    "responseTimeoutSeconds": 180
+}
+
