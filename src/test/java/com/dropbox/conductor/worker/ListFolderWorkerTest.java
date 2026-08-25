@@ -108,6 +108,8 @@ class ListFolderWorkerTest {
         assertEquals(2, entries.size());
         assertEquals("first.txt", entries.get(0).get("name"));
         assertEquals("second.txt", entries.get(1).get("name"));
+        assertEquals("cursor-2", result.getOutputData().get("cursor"));
+        assertEquals(false, result.getOutputData().get("hasMore"));
 
         verify(files).listFolderContinue("cursor-1");
     }

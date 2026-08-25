@@ -3,10 +3,7 @@ package com.dropbox.conductor.error;
 import com.dropbox.core.DbxApiException;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.RateLimitException;
-import com.dropbox.core.v2.files.CreateFolderErrorException;
-import com.dropbox.core.v2.files.DeleteErrorException;
-import com.dropbox.core.v2.files.RelocationErrorException;
-import com.dropbox.core.v2.files.UploadErrorException;
+import com.dropbox.core.v2.files.*;
 
 public final class DropboxErrorMapper {
 
@@ -139,6 +136,18 @@ public final class DropboxErrorMapper {
 
             if (uploadError.isPropertiesError()) {
                 return error(DropboxErrorCode.INVALID_INPUT, "Invalid Dropbox file properties", false, operation);
+            }
+        }
+
+        if (exception instanceof ListFolderErrorException listFolderException) {
+            var error = listFolderException.errorValue;
+
+            if (error.isPath() && error.getPathValue().isNotFound()) {
+                return error(DropboxErrorCode.PATH_NOT_FOUND, "Dropbox folder does not exist", false, operation);
+            }
+
+            if (error.isPath() && error.getPathValue().isNotFolder()) {
+                return error(DropboxErrorCode.INVALID_INPUT, "Dropbox path is not a folder", false, operation);
             }
         }
 
