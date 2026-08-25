@@ -1,0 +1,8 @@
+{
+    "name": "dropbox_move",
+    "description": "Move a Dropbox file or folder",
+    "retryCount": 0,
+    "timeoutSeconds": 120,
+    "timeoutPolicy": "TIME_OUT_WF",
+    "responseTimeoutSeconds": 60
+}

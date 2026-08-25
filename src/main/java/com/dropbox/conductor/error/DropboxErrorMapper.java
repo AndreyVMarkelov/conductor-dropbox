@@ -2,6 +2,7 @@ package com.dropbox.conductor.error;
 
 import com.dropbox.core.DbxApiException;
 import com.dropbox.core.DbxException;
+import com.dropbox.core.InvalidAccessTokenException;
 import com.dropbox.core.RateLimitException;
 import com.dropbox.core.v2.files.*;
 
@@ -149,6 +150,10 @@ public final class DropboxErrorMapper {
             if (error.isPath() && error.getPathValue().isNotFolder()) {
                 return error(DropboxErrorCode.INVALID_INPUT, "Dropbox path is not a folder", false, operation);
             }
+        }
+
+        if (exception instanceof InvalidAccessTokenException) {
+            return error(DropboxErrorCode.AUTH_ERROR, "Dropbox access token is invalid or expired", false, operation);
         }
 
         if (exception instanceof DbxApiException apiException) {

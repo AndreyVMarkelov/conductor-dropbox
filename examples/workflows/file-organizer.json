@@ -1,0 +1,92 @@
+{
+    "name": "dropbox_file_organizer",
+    "description": "Organize Dropbox files by extension",
+    "version": 1,
+    "schemaVersion": 2,
+    "restartable": true,
+    "inputParameters": [
+        "path"
+    ],
+    "tasks": [
+        {
+            "name": "dropbox_list_folder",
+            "taskReferenceName": "list_folder",
+            "type": "SIMPLE",
+            "inputParameters": {
+                "path": "${workflow.input.path}",
+                "recursive": false,
+                "includeDeleted": false
+            }
+        },
+        {
+            "name": "process_entries",
+            "taskReferenceName": "process_entries",
+            "type": "DO_WHILE",
+            "items": "${list_folder.output.entries}",
+            "loopCondition": "true",
+            "loopOver": [
+                {
+                    "name": "entry_type",
+                    "taskReferenceName": "entry_type",
+                    "type": "SWITCH",
+                    "inputParameters": {
+                        "type": "${process_entries.output.loopItem.type}"
+                    },
+                    "evaluatorType": "value-param",
+                    "expression": "type",
+                    "decisionCases": {
+                        "file": [
+                            {
+                                "name": "route_file",
+                                "taskReferenceName": "route_file",
+                                "type": "SWITCH",
+                                "inputParameters": {
+                                    "name": "${process_entries.output.loopItem.name}"
+                                },
+                                "evaluatorType": "javascript",
+                                "expression": "if ($.name.endsWith('.csv')) { 'data' } else if ($.name.endsWith('.pdf') || $.name.endsWith('.txt')) { 'document' } else { 'other' }",
+                                "decisionCases": {
+                                    "data": [
+                                        {
+                                            "name": "dropbox_move",
+                                            "taskReferenceName": "move_data",
+                                            "type": "SIMPLE",
+                                            "inputParameters": {
+                                                "fromPath": "${process_entries.output.loopItem.pathDisplay}",
+                                                "toPath": "/file-organizer/Data/${process_entries.output.loopItem.name}"
+                                            }
+                                        }
+                                    ],
+                                    "document": [
+                                        {
+                                            "name": "dropbox_move",
+                                            "taskReferenceName": "move_document",
+                                            "type": "SIMPLE",
+                                            "inputParameters": {
+                                                "fromPath": "${process_entries.output.loopItem.pathDisplay}",
+                                                "toPath": "/file-organizer/Documents/${process_entries.output.loopItem.name}"
+                                            }
+                                        }
+                                    ],
+                                    "other": [
+                                        {
+                                            "name": "dropbox_move",
+                                            "taskReferenceName": "move_other",
+                                            "type": "SIMPLE",
+                                            "inputParameters": {
+                                                "fromPath": "${process_entries.output.loopItem.pathDisplay}",
+                                                "toPath": "/file-organizer/Other/${process_entries.output.loopItem.name}"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "defaultCase": []
+                            }
+                        ]
+                    },
+                    "defaultCase": []
+                }
+            ]
+        }
+    ]
+}
