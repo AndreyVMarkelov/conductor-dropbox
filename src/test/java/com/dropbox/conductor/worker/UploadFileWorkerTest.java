@@ -1,18 +1,17 @@
 package com.dropbox.conductor.worker;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.UploadBuilder;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
-import org.junit.jupiter.api.Test;
-
 import java.io.InputStream;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
 
 class UploadFileWorkerTest {
 
@@ -41,8 +40,7 @@ class UploadFileWorkerTest {
                 "path", "/hello.txt",
                 "content", "SGVsbG8=",
                 "mode", "ADD",
-                "autorename", false
-        ));
+                "autorename", false));
 
         TaskResult result = new UploadFileWorker(dropbox).execute(task);
 

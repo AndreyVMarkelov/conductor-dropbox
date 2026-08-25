@@ -3,69 +3,49 @@ package com.dropbox.conductor.error;
 import com.dropbox.core.DbxApiException;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.RateLimitException;
+import com.dropbox.core.v2.files.CreateFolderErrorException;
+import com.dropbox.core.v2.files.DeleteErrorException;
 
 public final class DropboxErrorMapper {
 
-    private DropboxErrorMapper() {
-    }
+    private DropboxErrorMapper() {}
 
     public static DropboxError map(String operation, Exception exception) {
+        if (exception instanceof DeleteErrorException deleteException) {
+            if (deleteException.errorValue.isPathLookup()
+                    && deleteException.errorValue.getPathLookupValue().isNotFound()) {
+                return error(DropboxErrorCode.PATH_NOT_FOUND, "Dropbox path does not exist", false, operation);
+            }
+        }
+
+        if (exception instanceof CreateFolderErrorException createFolderException) {
+            if (createFolderException.errorValue.isPath()
+                    && createFolderException.errorValue.getPathValue().isConflict()) {
+                return error(DropboxErrorCode.PATH_CONFLICT, "Dropbox path already exists", false, operation);
+            }
+        }
+
         if (exception instanceof RateLimitException) {
-            return error(
-                    DropboxErrorCode.RATE_LIMITED,
-                    "Dropbox rate limit exceeded",
-                    true,
-                    operation
-            );
+            return error(DropboxErrorCode.RATE_LIMITED, "Dropbox rate limit exceeded", true, operation);
         }
 
         if (exception instanceof DbxApiException apiException) {
-            return error(
-                    DropboxErrorCode.INTERNAL_ERROR,
-                    safeMessage(apiException),
-                    false,
-                    operation
-            );
+            return error(DropboxErrorCode.INTERNAL_ERROR, safeMessage(apiException), false, operation);
         }
 
         if (exception instanceof DbxException dbxException) {
-            return error(
-                    DropboxErrorCode.NETWORK_ERROR,
-                    safeMessage(dbxException),
-                    true,
-                    operation
-            );
+            return error(DropboxErrorCode.NETWORK_ERROR, safeMessage(dbxException), true, operation);
         }
 
         if (exception instanceof IllegalArgumentException) {
-            return error(
-                    DropboxErrorCode.INVALID_INPUT,
-                    safeMessage(exception),
-                    false,
-                    operation
-            );
+            return error(DropboxErrorCode.INVALID_INPUT, safeMessage(exception), false, operation);
         }
 
-        return error(
-                DropboxErrorCode.INTERNAL_ERROR,
-                safeMessage(exception),
-                false,
-                operation
-        );
+        return error(DropboxErrorCode.INTERNAL_ERROR, safeMessage(exception), false, operation);
     }
 
-    private static DropboxError error(
-            DropboxErrorCode code,
-            String message,
-            boolean retryable,
-            String operation
-    ) {
-        return new DropboxError(
-                code.name(),
-                message,
-                retryable,
-                operation
-        );
+    private static DropboxError error(DropboxErrorCode code, String message, boolean retryable, String operation) {
+        return new DropboxError(code.name(), message, retryable, operation);
     }
 
     private static String safeMessage(Exception exception) {

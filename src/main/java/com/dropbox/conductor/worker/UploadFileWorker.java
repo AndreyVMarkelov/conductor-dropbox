@@ -7,7 +7,6 @@ import com.dropbox.core.v2.files.WriteMode;
 import com.netflix.conductor.client.worker.Worker;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
-
 import java.io.ByteArrayInputStream;
 import java.util.Base64;
 import java.util.HashMap;
@@ -33,36 +32,25 @@ public final class UploadFileWorker implements Worker {
         String path = (String) task.getInputData().get("path");
         String content = (String) task.getInputData().get("content");
         String mode = (String) task.getInputData().getOrDefault("mode", "ADD");
-        boolean autorename = Boolean.TRUE.equals(
-                task.getInputData().get("autorename")
-        );
+        boolean autorename = Boolean.TRUE.equals(task.getInputData().get("autorename"));
 
         if (path == null || path.isBlank()) {
-            return TaskResults.invalidInput(
-                    task,
-                    "upload_file",
-                    "path is required"
-            );
+            return TaskResults.invalidInput(task, "upload_file", "path is required");
         }
 
         if (content == null || content.isBlank()) {
-            return TaskResults.invalidInput(
-                    task,
-                    "upload_file",
-                    "content is required"
-            );
+            return TaskResults.invalidInput(task, "upload_file", "content is required");
         }
 
         try {
             byte[] bytes = Base64.getDecoder().decode(content);
 
-            WriteMode writeMode = switch (mode) {
-                case "ADD" -> WriteMode.ADD;
-                case "OVERWRITE" -> WriteMode.OVERWRITE;
-                default -> throw new IllegalArgumentException(
-                        "Unsupported upload mode: " + mode
-                );
-            };
+            WriteMode writeMode =
+                    switch (mode) {
+                        case "ADD" -> WriteMode.ADD;
+                        case "OVERWRITE" -> WriteMode.OVERWRITE;
+                        default -> throw new IllegalArgumentException("Unsupported upload mode: " + mode);
+                    };
 
             FileMetadata metadata;
 
@@ -74,15 +62,9 @@ public final class UploadFileWorker implements Worker {
                         .uploadAndFinish(input);
             }
 
-            return TaskResults.completed(
-                    task,
-                    fileOutput(metadata)
-            );
+            return TaskResults.completed(task, fileOutput(metadata));
         } catch (Exception e) {
-            return TaskResults.failed(
-                    task,
-                    DropboxErrorMapper.map("upload_file", e)
-            );
+            return TaskResults.failed(task, DropboxErrorMapper.map("upload_file", e));
         }
     }
 

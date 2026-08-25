@@ -1,20 +1,17 @@
 package com.dropbox.conductor.error;
 
-import com.dropbox.core.DbxException;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.dropbox.core.DbxException;
+import org.junit.jupiter.api.Test;
 
 class DropboxErrorMapperTest {
 
     @Test
     void mapsIllegalArgumentExceptionToInvalidInput() {
-        DropboxError error = DropboxErrorMapper.map(
-                "upload_file",
-                new IllegalArgumentException("bad mode")
-        );
+        DropboxError error = DropboxErrorMapper.map("upload_file", new IllegalArgumentException("bad mode"));
 
         assertEquals("INVALID_INPUT", error.code());
         assertEquals("bad mode", error.message());
@@ -24,10 +21,7 @@ class DropboxErrorMapperTest {
 
     @Test
     void mapsDbxExceptionToRetryableNetworkError() {
-        DropboxError error = DropboxErrorMapper.map(
-                "download_file",
-                new DbxException("network failure")
-        );
+        DropboxError error = DropboxErrorMapper.map("download_file", new DbxException("network failure"));
 
         assertEquals("NETWORK_ERROR", error.code());
         assertEquals("network failure", error.message());
@@ -37,10 +31,7 @@ class DropboxErrorMapperTest {
 
     @Test
     void mapsUnknownExceptionToInternalError() {
-        DropboxError error = DropboxErrorMapper.map(
-                "delete",
-                new RuntimeException("boom")
-        );
+        DropboxError error = DropboxErrorMapper.map("delete", new RuntimeException("boom"));
 
         assertEquals("INTERNAL_ERROR", error.code());
         assertEquals("boom", error.message());
@@ -50,10 +41,7 @@ class DropboxErrorMapperTest {
 
     @Test
     void usesExceptionClassNameWhenMessageMissing() {
-        DropboxError error = DropboxErrorMapper.map(
-                "move",
-                new RuntimeException()
-        );
+        DropboxError error = DropboxErrorMapper.map("move", new RuntimeException());
 
         assertEquals("INTERNAL_ERROR", error.code());
         assertEquals("RuntimeException", error.message());
