@@ -42,6 +42,10 @@ public final class UploadFileWorker implements Worker {
             return TaskResults.invalidInput(task, "upload_file", "content is required");
         }
 
+        if (task.getRetryCount() > 0 && "ADD".equalsIgnoreCase(mode) && autorename) {
+            return TaskResults.invalidInput(task, "upload_file", "ADD with autorename cannot be safely retried");
+        }
+
         try {
             byte[] bytes = Base64.getDecoder().decode(content);
 
