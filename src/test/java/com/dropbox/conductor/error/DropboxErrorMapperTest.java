@@ -1,8 +1,10 @@
 package com.dropbox.conductor.error;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 import com.dropbox.core.DbxException;
+import com.dropbox.core.InvalidAccessTokenException;
 import com.dropbox.core.v2.files.*;
 import org.junit.jupiter.api.Test;
 
@@ -205,6 +207,18 @@ class DropboxErrorMapperTest {
         assertEquals("Dropbox API does not support the required file encryption", error.message());
         assertFalse(error.retryable());
         assertEquals("upload_file", error.operation());
+    }
+
+    @Test
+    void mapsInvalidAccessTokenAsNonRetryableAuthError() {
+        InvalidAccessTokenException exception = mock(InvalidAccessTokenException.class);
+
+        DropboxError error = DropboxErrorMapper.map("list_folder", exception);
+
+        assertEquals(DropboxErrorCode.AUTH_ERROR.name(), error.code());
+        assertEquals("Dropbox access token is invalid or expired", error.message());
+        assertFalse(error.retryable());
+        assertEquals("list_folder", error.operation());
     }
 
     private static RelocationErrorException relocationException(RelocationError error) {
