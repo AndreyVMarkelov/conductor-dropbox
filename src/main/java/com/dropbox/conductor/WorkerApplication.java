@@ -5,7 +5,6 @@ import com.dropbox.conductor.worker.*;
 import com.netflix.conductor.client.automator.TaskRunnerConfigurer;
 import com.netflix.conductor.client.http.ConductorClient;
 import com.netflix.conductor.client.http.TaskClient;
-
 import java.util.List;
 
 public class WorkerApplication {
@@ -17,16 +16,13 @@ public class WorkerApplication {
         var dropbox = DropboxClientProvider.create();
 
         var configurer = new TaskRunnerConfigurer.Builder(
-                taskClient,
-                List.of(
-                        new RetryTestWorker(),
-                        new CreateFolderWorker(dropbox),
-                        new UploadFileWorker(dropbox),
-                        new DownloadFileWorker(dropbox),
-                        new MoveWorker(dropbox),
-                        new DeleteWorker(dropbox)
-                )
-        )
+                        taskClient,
+                        List.of(
+                                new CreateFolderWorker(dropbox),
+                                new UploadFileWorker(dropbox),
+                                new DownloadFileWorker(dropbox),
+                                new MoveWorker(dropbox),
+                                new DeleteWorker(dropbox)))
                 .withThreadCount(2)
                 .build();
         configurer.init();

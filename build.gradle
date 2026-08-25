@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'application'
+    id 'com.diffplug.spotless' version '7.2.1'
 }
 
 group = 'com.dropbox.conductor'
@@ -22,6 +23,25 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+}
+
+spotless {
+    java {
+        palantirJavaFormat()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+
+    groovyGradle {
+        target '*.gradle'
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+tasks.named('check') {
+    dependsOn 'spotlessCheck'
 }
 
 dependencies {

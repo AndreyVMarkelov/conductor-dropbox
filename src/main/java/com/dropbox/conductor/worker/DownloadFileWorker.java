@@ -6,7 +6,6 @@ import com.dropbox.core.v2.files.FileMetadata;
 import com.netflix.conductor.client.worker.Worker;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
-
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 import java.util.HashMap;
@@ -32,35 +31,20 @@ public final class DownloadFileWorker implements Worker {
         String path = (String) task.getInputData().get("path");
 
         if (path == null || path.isBlank()) {
-            return TaskResults.invalidInput(
-                    task,
-                    "download_file",
-                    "path is required"
-            );
+            return TaskResults.invalidInput(task, "download_file", "path is required");
         }
 
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-            FileMetadata metadata = dropbox.files()
-                    .downloadBuilder(path)
-                    .download(outputStream);
+            FileMetadata metadata = dropbox.files().downloadBuilder(path).download(outputStream);
 
             Map<String, Object> output = fileOutput(metadata);
-            output.put(
-                    "content",
-                    Base64.getEncoder().encodeToString(outputStream.toByteArray())
-            );
+            output.put("content", Base64.getEncoder().encodeToString(outputStream.toByteArray()));
 
-            return TaskResults.completed(
-                    task,
-                    output
-            );
+            return TaskResults.completed(task, output);
         } catch (Exception e) {
-            return TaskResults.failed(
-                    task,
-                    DropboxErrorMapper.map("download_file", e)
-            );
+            return TaskResults.failed(task, DropboxErrorMapper.map("download_file", e));
         }
     }
 

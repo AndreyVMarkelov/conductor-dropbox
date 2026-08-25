@@ -3,14 +3,12 @@ package com.dropbox.conductor.worker;
 import com.dropbox.conductor.error.DropboxError;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
-
 import java.util.HashMap;
 import java.util.Map;
 
 public final class TaskResults {
 
-    private TaskResults() {
-    }
+    private TaskResults() {}
 
     public static TaskResult completed(Task task, Map<String, Object> output) {
         TaskResult result = base(task);
@@ -22,11 +20,7 @@ public final class TaskResults {
     public static TaskResult failed(Task task, DropboxError error) {
         TaskResult result = base(task);
 
-        result.setStatus(
-                error.retryable()
-                        ? TaskResult.Status.FAILED
-                        : TaskResult.Status.FAILED_WITH_TERMINAL_ERROR
-        );
+        result.setStatus(error.retryable() ? TaskResult.Status.FAILED : TaskResult.Status.FAILED_WITH_TERMINAL_ERROR);
 
         result.setReasonForIncompletion(error.message());
 
@@ -41,20 +35,8 @@ public final class TaskResults {
         return result;
     }
 
-    public static TaskResult invalidInput(
-            Task task,
-            String operation,
-            String message
-    ) {
-        return failed(
-                task,
-                new DropboxError(
-                        "INVALID_INPUT",
-                        message,
-                        false,
-                        operation
-                )
-        );
+    public static TaskResult invalidInput(Task task, String operation, String message) {
+        return failed(task, new DropboxError("INVALID_INPUT", message, false, operation));
     }
 
     private static TaskResult base(Task task) {

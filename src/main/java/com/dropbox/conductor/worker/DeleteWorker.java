@@ -2,11 +2,11 @@ package com.dropbox.conductor.worker;
 
 import com.dropbox.conductor.error.DropboxErrorMapper;
 import com.dropbox.core.v2.DbxClientV2;
+import com.dropbox.core.v2.files.DeleteErrorException;
 import com.dropbox.core.v2.files.Metadata;
 import com.netflix.conductor.client.worker.Worker;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,28 +30,23 @@ public final class DeleteWorker implements Worker {
         String path = (String) task.getInputData().get("path");
 
         if (path == null || path.isBlank()) {
-            return TaskResults.invalidInput(
-                    task,
-                    "delete",
-                    "path is required"
-            );
+            return TaskResults.invalidInput(task, "delete", "path is required");
         }
 
         try {
-            Metadata metadata = dropbox.files()
-                    .deleteV2(path)
-                    .getMetadata();
+            Metadata metadata = dropbox.files().deleteV2(path).getMetadata();
 
-            return TaskResults.completed(
-                    task,
-                    metadataOutput(metadata)
-            );
+            return TaskResults.completed(task, metadataOutput(metadata));
 
+        } catch (DeleteErrorException deleteErrorException) {
+            if (task.getRetryCount() > 0
+                    && deleteErrorException.errorValue.isPathLookup()
+                    && deleteErrorException.errorValue.getPathLookupValue().isNotFound()) {
+                return TaskResults.completed(task, Map.of("path", path, "alreadyDeleted", true));
+            }
+            return TaskResults.failed(task, DropboxErrorMapper.map("delete", deleteErrorException));
         } catch (Exception e) {
-            return TaskResults.failed(
-                    task,
-                    DropboxErrorMapper.map("delete", e)
-            );
+            return TaskResults.failed(task, DropboxErrorMapper.map("delete", e));
         }
     }
 

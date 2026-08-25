@@ -7,7 +7,6 @@ import com.dropbox.core.v2.files.RelocationResult;
 import com.netflix.conductor.client.worker.Worker;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,24 +29,14 @@ public final class MoveWorker implements Worker {
     public TaskResult execute(Task task) {
         String fromPath = (String) task.getInputData().get("fromPath");
         String toPath = (String) task.getInputData().get("toPath");
-        boolean autorename = Boolean.TRUE.equals(
-                task.getInputData().get("autorename")
-        );
+        boolean autorename = Boolean.TRUE.equals(task.getInputData().get("autorename"));
 
         if (fromPath == null || fromPath.isBlank()) {
-            return TaskResults.invalidInput(
-                    task,
-                    "move",
-                    "fromPath is required"
-            );
+            return TaskResults.invalidInput(task, "move", "fromPath is required");
         }
 
         if (toPath == null || toPath.isBlank()) {
-            return TaskResults.invalidInput(
-                    task,
-                    "move",
-                    "toPath is required"
-            );
+            return TaskResults.invalidInput(task, "move", "toPath is required");
         }
 
         try {
@@ -57,15 +46,9 @@ public final class MoveWorker implements Worker {
                     .start();
 
             Metadata metadata = relocationResult.getMetadata();
-            return TaskResults.completed(
-                    task,
-                    metadataOutput(metadata)
-            );
+            return TaskResults.completed(task, metadataOutput(metadata));
         } catch (Exception e) {
-            return TaskResults.failed(
-                    task,
-                    DropboxErrorMapper.map("move", e)
-            );
+            return TaskResults.failed(task, DropboxErrorMapper.map("move", e));
         }
     }
 

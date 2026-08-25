@@ -1,16 +1,13 @@
 package com.dropbox.conductor.dropbox;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 class DropboxClientIntegrationTest {
     @Test
-    @EnabledIfEnvironmentVariable(
-            named = "DROPBOX_ACCESS_TOKEN",
-            matches = ".+"
-    )
+    @EnabledIfEnvironmentVariable(named = "DROPBOX_ACCESS_TOKEN", matches = ".+")
     void authenticatesWithDropbox() throws Exception {
         var client = DropboxClientProvider.create();
 
@@ -18,8 +15,6 @@ class DropboxClientIntegrationTest {
 
         assertNotNull(account.getAccountId());
 
-        System.out.println(
-                "Connected to Dropbox account: " + account.getAccountId()
-        );
+        System.out.println("Connected to Dropbox account: " + account.getAccountId());
     }
 }

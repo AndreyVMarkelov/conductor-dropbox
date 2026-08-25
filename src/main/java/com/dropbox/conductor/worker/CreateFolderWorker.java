@@ -2,12 +2,13 @@ package com.dropbox.conductor.worker;
 
 import com.dropbox.conductor.error.DropboxErrorMapper;
 import com.dropbox.core.v2.DbxClientV2;
+import com.dropbox.core.v2.files.CreateFolderErrorException;
 import com.dropbox.core.v2.files.CreateFolderResult;
 import com.dropbox.core.v2.files.FolderMetadata;
+import com.dropbox.core.v2.files.WriteConflictError;
 import com.netflix.conductor.client.worker.Worker;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,26 +32,24 @@ public final class CreateFolderWorker implements Worker {
         String path = (String) task.getInputData().get("path");
 
         if (path == null || path.isBlank()) {
-            return TaskResults.invalidInput(
-                    task,
-                    "create_folder",
-                    "path is required"
-            );
+            return TaskResults.invalidInput(task, "create_folder", "path is required");
         }
 
         try {
             CreateFolderResult result = dropbox.files().createFolderV2(path);
             var metadata = result.getMetadata();
 
-            return TaskResults.completed(
-                    task,
-                    folderOutput(metadata)
-            );
+            return TaskResults.completed(task, folderOutput(metadata));
+        } catch (CreateFolderErrorException e) {
+            if (task.getRetryCount() > 0
+                    && e.errorValue.isPath()
+                    && e.errorValue.getPathValue().isConflict()
+                    && e.errorValue.getPathValue().getConflictValue() == WriteConflictError.FOLDER) {
+                return TaskResults.completed(task, Map.of("path", path, "alreadyExists", true));
+            }
+            return TaskResults.failed(task, DropboxErrorMapper.map("create_folder", e));
         } catch (Exception e) {
-            return TaskResults.failed(
-                    task,
-                    DropboxErrorMapper.map("create_folder", e)
-            );
+            return TaskResults.failed(task, DropboxErrorMapper.map("create_folder", e));
         }
     }
 
