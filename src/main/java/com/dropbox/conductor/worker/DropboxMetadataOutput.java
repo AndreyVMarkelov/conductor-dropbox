@@ -1,5 +1,6 @@
 package com.dropbox.conductor.worker;
 
+import com.dropbox.core.v2.files.DeletedMetadata;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.FolderMetadata;
 import com.dropbox.core.v2.files.Metadata;
@@ -17,17 +18,20 @@ public final class DropboxMetadataOutput {
         putIfNotNull(output, "pathLower", metadata.getPathLower());
         putIfNotNull(output, "pathDisplay", metadata.getPathDisplay());
 
-        if (metadata instanceof FileMetadata file) {
-            output.put("type", "file");
-            output.put("id", file.getId());
-            output.put("rev", file.getRev());
-            output.put("size", file.getSize());
-            putIfNotNull(output, "contentHash", file.getContentHash());
-        } else if (metadata instanceof FolderMetadata folder) {
-            output.put("type", "folder");
-            output.put("id", folder.getId());
-        } else {
-            output.put("type", "deleted");
+        switch (metadata) {
+            case FileMetadata file -> {
+                output.put("type", "file");
+                output.put("id", file.getId());
+                output.put("rev", file.getRev());
+                output.put("size", file.getSize());
+                putIfNotNull(output, "contentHash", file.getContentHash());
+            }
+            case FolderMetadata folder -> {
+                output.put("type", "folder");
+                output.put("id", folder.getId());
+            }
+            case DeletedMetadata ignored -> output.put("type", "deleted");
+            default -> output.put("type", "unknown");
         }
 
         return output;

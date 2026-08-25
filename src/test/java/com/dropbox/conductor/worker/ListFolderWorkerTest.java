@@ -112,6 +112,27 @@ class ListFolderWorkerTest {
         verify(files).listFolderContinue("cursor-1");
     }
 
+    @Test
+    void listsRootFolder() throws Exception {
+        DbxClientV2 dropbox = mock(DbxClientV2.class);
+        DbxUserFilesRequests files = mock(DbxUserFilesRequests.class);
+        DbxUserListFolderBuilder builder = mock(DbxUserListFolderBuilder.class);
+
+        when(dropbox.files()).thenReturn(files);
+        when(files.listFolderBuilder("")).thenReturn(builder);
+        when(builder.withRecursive(false)).thenReturn(builder);
+        when(builder.withIncludeDeleted(false)).thenReturn(builder);
+        when(builder.start()).thenReturn(new ListFolderResult(List.of(), "cursor-root", false));
+
+        Task task = new Task();
+        task.setInputData(Map.of("path", "/"));
+
+        TaskResult result = new ListFolderWorker(dropbox).execute(task);
+
+        assertEquals(TaskResult.Status.COMPLETED, result.getStatus());
+        verify(files).listFolderBuilder("");
+    }
+
     private static FileMetadata file(String name, String id, String rev) {
 
         return FileMetadata.newBuilder(name, id, new Date(), new Date(), rev, 1)
