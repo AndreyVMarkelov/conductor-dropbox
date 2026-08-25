@@ -23,6 +23,9 @@ public class WorkerApplication {
                                 new DownloadFileWorker(dropbox),
                                 new MoveWorker(dropbox),
                                 new DeleteWorker(dropbox),
+                                new ExtractMarkdownAsyncStartWorker(dropbox),
+                                new ExtractMarkdownAsyncCheckWorker(dropbox),
+                                new ExtractMarkdownWorker(dropbox),
                                 new ListFolderWorker(dropbox)))
                 .withThreadCount(2)
                 .build();
