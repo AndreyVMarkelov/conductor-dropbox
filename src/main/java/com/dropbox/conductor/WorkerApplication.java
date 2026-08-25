@@ -18,7 +18,6 @@ public class WorkerApplication {
         var configurer = new TaskRunnerConfigurer.Builder(
                         taskClient,
                         List.of(
-                                new RetryTestWorker(),
                                 new CreateFolderWorker(dropbox),
                                 new UploadFileWorker(dropbox),
                                 new DownloadFileWorker(dropbox),

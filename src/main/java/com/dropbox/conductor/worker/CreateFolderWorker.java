@@ -41,7 +41,7 @@ public final class CreateFolderWorker implements Worker {
 
             return TaskResults.completed(task, folderOutput(metadata));
         } catch (CreateFolderErrorException e) {
-            if (task.getRetryCount() >= 0
+            if (task.getRetryCount() > 0
                     && e.errorValue.isPath()
                     && e.errorValue.getPathValue().isConflict()
                     && e.errorValue.getPathValue().getConflictValue() == WriteConflictError.FOLDER) {
