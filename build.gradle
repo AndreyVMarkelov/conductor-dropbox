@@ -41,6 +41,8 @@ dependencies {
 test {
     useJUnitPlatform()
 
+    jvmArgs "-javaagent:${configurations.mockitoAgent.asPath}"
+
     testLogging {
         events "passed", "skipped", "failed"
         showStandardStreams = true

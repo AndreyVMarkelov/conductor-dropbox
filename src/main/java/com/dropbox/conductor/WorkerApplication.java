@@ -31,7 +31,7 @@ public class WorkerApplication {
                 .build();
         configurer.init();
 
-        System.out.println("HelloWorker started");
+        System.out.println("Dropbox workers started");
 
         Runtime.getRuntime().addShutdownHook(new Thread(configurer::shutdown));
     }
