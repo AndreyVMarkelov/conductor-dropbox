@@ -9,6 +9,7 @@ import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import java.util.Map;
 
 public final class ExtractMarkdownWorker implements Worker {
+
     public static final String TASK_NAME = "dropbox_extract_markdown";
 
     private static final String OPERATION = "extract_markdown";
@@ -65,7 +66,9 @@ public final class ExtractMarkdownWorker implements Worker {
                                     OPERATION, new IllegalStateException("Unexpected Riviera job status")));
                 }
 
-                Thread.sleep(pollDelayMs);
+                if (attempt < MAX_ATTEMPTS - 1) {
+                    Thread.sleep(pollDelayMs);
+                }
             }
 
             return TaskResults.failed(
