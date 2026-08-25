@@ -40,6 +40,16 @@ spotless {
     }
 }
 
+tasks.register('dropboxLogin', JavaExec) {
+    group = 'application'
+    description = 'Authorize Dropbox with PKCE and print refresh-token environment variables'
+
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.dropbox.conductor.dropbox.DropboxPkceLogin'
+
+    standardInput = System.in
+}
+
 tasks.named('check') {
     dependsOn 'spotlessCheck'
 }

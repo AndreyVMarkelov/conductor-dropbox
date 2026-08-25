@@ -31,9 +31,43 @@ If both authentication modes are configured, refresh-token authentication takes 
 
 ### PKCE / OAuth login
 
-The worker does not currently perform an interactive OAuth login flow.
+`conductor-dropbox` includes a PKCE-based login helper that can obtain a long-lived Dropbox refresh token without using an app secret.
 
-A PKCE-based bootstrap flow will be added separately so users can authorize Dropbox and obtain a refresh token without embedding an app secret in the worker.
+Set your Dropbox app key:
+
+```sh
+export DROPBOX_APP_KEY=your_app_key
+```
+
+Run:
+
+```sh
+./gradlew dropboxLogin
+```
+
+The command prints a Dropbox authorization URL.
+
+Open the URL in your browser, authorize the app, copy the authorization code, and paste it back into the terminal.
+
+After a successful login, the command prints:
+
+```sh
+export DROPBOX_APP_KEY=...
+export DROPBOX_REFRESH_TOKEN=...
+```
+
+Export those values and start the worker:
+
+```sh
+unset DROPBOX_ACCESS_TOKEN
+
+export DROPBOX_APP_KEY=...
+export DROPBOX_REFRESH_TOKEN=...
+
+./gradlew run
+```
+
+The Dropbox Java SDK will automatically obtain and refresh short-lived access tokens at runtime.
 
 ## Workflow examples
 
