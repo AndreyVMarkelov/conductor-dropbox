@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'application'
 }
 
 group = 'com.dropbox.conductor'
@@ -7,6 +8,14 @@ version = '0.1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+}
+
+configurations {
+    mockitoAgent
+}
+
+application {
+    mainClass = 'com.dropbox.conductor.WorkerApplication'
 }
 
 java {
@@ -22,8 +31,20 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    testImplementation 'org.mockito:mockito-core:5.20.0'
+    mockitoAgent('org.mockito:mockito-core:5.20.0') {
+        transitive = false
+    }
 }
 
 test {
     useJUnitPlatform()
+
+    jvmArgs "-javaagent:${configurations.mockitoAgent.asPath}"
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = true
+    }
 }
