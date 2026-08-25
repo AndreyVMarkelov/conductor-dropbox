@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.dropbox.core.v2.DbxClientV2;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 
 class DropboxClientProviderTest {
 
@@ -53,5 +54,22 @@ class DropboxClientProviderTest {
                 "DROPBOX_REFRESH_TOKEN", "refresh-token"));
 
         assertNotNull(client);
+    }
+
+    @Test
+    @EnabledIf("hasDropboxCredentials")
+    void authenticatesWithDropbox() throws Exception {
+        var client = DropboxClientProvider.create();
+        var account = client.users().getCurrentAccount();
+        assertNotNull(account.getAccountId());
+    }
+
+    static boolean hasDropboxCredentials() {
+        String accessToken = System.getenv("DROPBOX_ACCESS_TOKEN");
+        String appKey = System.getenv("DROPBOX_APP_KEY");
+        String refreshToken = System.getenv("DROPBOX_REFRESH_TOKEN");
+
+        return (accessToken != null && !accessToken.isBlank())
+                || (appKey != null && !appKey.isBlank() && refreshToken != null && !refreshToken.isBlank());
     }
 }
