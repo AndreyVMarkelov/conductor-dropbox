@@ -3,9 +3,7 @@ package com.dropbox.conductor.error;
 import com.dropbox.core.DbxApiException;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.RateLimitException;
-import com.dropbox.core.v2.files.CreateFolderErrorException;
-import com.dropbox.core.v2.files.DeleteErrorException;
-import com.dropbox.core.v2.files.RelocationErrorException;
+import com.dropbox.core.v2.files.*;
 
 public final class DropboxErrorMapper {
 
@@ -77,6 +75,79 @@ public final class DropboxErrorMapper {
                         "Dropbox does not allow this move operation",
                         false,
                         operation);
+            }
+        }
+
+        if (exception instanceof UploadErrorException uploadException) {
+            var uploadError = uploadException.errorValue;
+
+            if (uploadError.isPath()) {
+                var writeError = uploadError.getPathValue().getReason();
+
+                if (writeError.isConflict()) {
+                    return error(
+                            DropboxErrorCode.PATH_CONFLICT,
+                            "Dropbox destination path already exists",
+                            false,
+                            operation);
+                }
+
+                if (writeError.isNoWritePermission()) {
+                    return error(
+                            DropboxErrorCode.PERMISSION_DENIED,
+                            "No permission to write Dropbox destination path",
+                            false,
+                            operation);
+                }
+
+                if (writeError.isInsufficientSpace()) {
+                    return error(
+                            DropboxErrorCode.QUOTA_EXCEEDED, "Insufficient Dropbox storage quota", false, operation);
+                }
+
+                if (writeError.isTooManyWriteOperations()) {
+                    return error(
+                            DropboxErrorCode.TEMPORARY_UNAVAILABLE,
+                            "Too many Dropbox write operations",
+                            true,
+                            operation);
+                }
+
+                if (writeError.isMalformedPath()) {
+                    return error(DropboxErrorCode.INVALID_INPUT, "Invalid Dropbox destination path", false, operation);
+                }
+            }
+
+            if (uploadError.isPayloadTooLarge()) {
+                return error(DropboxErrorCode.INVALID_INPUT, "Upload payload is too large", false, operation);
+            }
+
+            if (uploadError.isContentHashMismatch()) {
+                return error(DropboxErrorCode.INVALID_INPUT, "Upload content hash mismatch", false, operation);
+            }
+
+            if (uploadError.isEncryptionNotSupported()) {
+                return error(
+                        DropboxErrorCode.OPERATION_NOT_SUPPORTED,
+                        "Dropbox API does not support the required file encryption",
+                        false,
+                        operation);
+            }
+
+            if (uploadError.isPropertiesError()) {
+                return error(DropboxErrorCode.INVALID_INPUT, "Invalid Dropbox file properties", false, operation);
+            }
+        }
+
+        if (exception instanceof ListFolderErrorException listFolderException) {
+            var error = listFolderException.errorValue;
+
+            if (error.isPath() && error.getPathValue().isNotFound()) {
+                return error(DropboxErrorCode.PATH_NOT_FOUND, "Dropbox folder does not exist", false, operation);
+            }
+
+            if (error.isPath() && error.getPathValue().isNotFolder()) {
+                return error(DropboxErrorCode.INVALID_INPUT, "Dropbox path is not a folder", false, operation);
             }
         }
 

@@ -33,7 +33,7 @@ class UploadFileWorkerTest {
         when(builder.withAutorename(false)).thenReturn(builder);
         when(builder.uploadAndFinish(any(InputStream.class))).thenReturn(metadata);
 
-        Task task = new Task();
+        var task = new Task();
         task.setTaskId("task-1");
         task.setWorkflowInstanceId("workflow-1");
         task.setInputData(Map.of(
@@ -42,7 +42,7 @@ class UploadFileWorkerTest {
                 "mode", "ADD",
                 "autorename", false));
 
-        TaskResult result = new UploadFileWorker(dropbox).execute(task);
+        var result = new UploadFileWorker(dropbox).execute(task);
 
         assertEquals(TaskResult.Status.COMPLETED, result.getStatus());
         assertEquals("hello.txt", result.getOutputData().get("name"));
@@ -51,17 +51,36 @@ class UploadFileWorkerTest {
 
     @Test
     void failsWhenPathMissing() {
-        Task task = new Task();
+        var task = new Task();
         task.setTaskId("task-1");
         task.setWorkflowInstanceId("workflow-1");
         task.setInputData(Map.of("content", "SGVsbG8="));
 
-        TaskResult result = new UploadFileWorker(null).execute(task);
+        var result = new UploadFileWorker(null).execute(task);
 
         assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
         assertEquals("INVALID_INPUT", result.getOutputData().get("errorCode"));
         assertEquals(false, result.getOutputData().get("retryable"));
         assertEquals("upload_file", result.getOutputData().get("operation"));
         assertEquals("path is required", result.getReasonForIncompletion());
+    }
+
+    @Test
+    void rejectsRetryForAddWithAutorename() {
+        var task = new Task();
+        task.setRetryCount(1);
+        task.setInputData(Map.of(
+                "path", "/file.txt",
+                "content", "SGVsbG8=",
+                "mode", "ADD",
+                "autorename", true));
+
+        var result = new UploadFileWorker(null).execute(task);
+
+        assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
+        assertEquals("INVALID_INPUT", result.getOutputData().get("errorCode"));
+        assertEquals(false, result.getOutputData().get("retryable"));
+        assertEquals("upload_file", result.getOutputData().get("operation"));
+        assertEquals("ADD with autorename cannot be safely retried", result.getReasonForIncompletion());
     }
 }
