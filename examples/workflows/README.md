@@ -20,15 +20,13 @@
 ### Register task definitions
 
 ```sh
-curl -s -X POST \
-  http://localhost:8080/api/metadata/taskdefs \
-  -H 'Content-Type: application/json' \
-  -d @examples/taskdefs/dropbox-list-folder.json
-
-curl -s -X POST \
-  http://localhost:8080/api/metadata/taskdefs \
-  -H 'Content-Type: application/json' \
-  -d @examples/taskdefs/dropbox-extract-markdown.json
+jq -s '.' \
+  examples/taskdefs/dropbox-list-folder.json \
+  examples/taskdefs/dropbox-extract-markdown.json \
+  | curl -s -X POST \
+      http://localhost:8080/api/metadata/taskdefs \
+      -H 'Content-Type: application/json' \
+      -d @-
 ```
 
 ### Register workflow
