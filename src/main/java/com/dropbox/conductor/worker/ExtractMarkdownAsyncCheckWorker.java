@@ -40,7 +40,6 @@ public final class ExtractMarkdownAsyncCheckWorker implements Worker {
 
             if (result.isInProgress()) {
                 output.put("status", "in_progress");
-
                 return TaskResults.completed(task, output);
             }
 
@@ -51,9 +50,9 @@ public final class ExtractMarkdownAsyncCheckWorker implements Worker {
                 return TaskResults.completed(task, output);
             }
 
-            output.put("status", "unknown");
-
-            return TaskResults.completed(task, output);
+            return TaskResults.failed(
+                    task,
+                    DropboxErrorMapper.map(OPERATION, new IllegalStateException("Unexpected Riviera job status")));
 
         } catch (Exception e) {
             return TaskResults.failed(task, DropboxErrorMapper.map(OPERATION, e));
