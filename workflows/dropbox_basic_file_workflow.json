@@ -1,0 +1,75 @@
+{
+  "name": "dropbox_basic_file_workflow",
+  "description": "Basic Dropbox file lifecycle workflow",
+  "version": 1,
+  "schemaVersion": 2,
+  "tasks": [
+    {
+      "name": "dropbox_create_folder",
+      "taskReferenceName": "create_input_folder",
+      "type": "SIMPLE",
+      "inputParameters": {
+        "path": "${workflow.input.inputFolder}"
+      }
+    },
+    {
+      "name": "dropbox_create_folder",
+      "taskReferenceName": "create_processed_folder",
+      "type": "SIMPLE",
+      "inputParameters": {
+        "path": "${workflow.input.processedFolder}"
+      }
+    },
+    {
+      "name": "dropbox_upload_file",
+      "taskReferenceName": "upload",
+      "type": "SIMPLE",
+      "inputParameters": {
+        "path": "${workflow.input.uploadPath}",
+        "content": "${workflow.input.content}",
+        "mode": "ADD",
+        "autorename": false
+      }
+    },
+    {
+      "name": "dropbox_download_file",
+      "taskReferenceName": "download",
+      "type": "SIMPLE",
+      "inputParameters": {
+        "path": "${workflow.input.uploadPath}"
+      }
+    },
+    {
+      "name": "dropbox_move",
+      "taskReferenceName": "move",
+      "type": "SIMPLE",
+      "inputParameters": {
+        "fromPath": "${workflow.input.uploadPath}",
+        "toPath": "${workflow.input.processedPath}",
+        "autorename": false
+      }
+    },
+    {
+      "name": "dropbox_delete",
+      "taskReferenceName": "delete",
+      "type": "SIMPLE",
+      "inputParameters": {
+        "path": "${workflow.input.processedPath}"
+      }
+    }
+  ],
+  "inputParameters": [
+    "inputFolder",
+    "uploadPath",
+    "processedFolder",
+    "processedPath",
+    "content"
+  ],
+  "outputParameters": {
+    "uploadedFile": "${upload.output}",
+    "downloadedContent": "${download.output.content}",
+    "movedFile": "${move.output}",
+    "deletedFile": "${delete.output}"
+  }
+}
+
