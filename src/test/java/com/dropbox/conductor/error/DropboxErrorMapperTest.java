@@ -1,10 +1,9 @@
 package com.dropbox.conductor.error;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.dropbox.core.DbxException;
+import com.dropbox.core.v2.files.*;
 import org.junit.jupiter.api.Test;
 
 class DropboxErrorMapperTest {
@@ -46,5 +45,81 @@ class DropboxErrorMapperTest {
         assertEquals("INTERNAL_ERROR", error.code());
         assertEquals("RuntimeException", error.message());
         assertFalse(error.retryable());
+    }
+
+    @Test
+    void mapsMoveSourceNotFound() {
+        RelocationErrorException exception = relocationException(RelocationError.fromLookup(LookupError.NOT_FOUND));
+
+        DropboxError error = DropboxErrorMapper.map("move", exception);
+
+        assertEquals("PATH_NOT_FOUND", error.code());
+        assertEquals("Dropbox source path does not exist", error.message());
+        assertFalse(error.retryable());
+        assertEquals("move", error.operation());
+    }
+
+    @Test
+    void mapsMoveDestinationConflict() {
+        RelocationErrorException exception =
+                relocationException(RelocationError.to(WriteError.conflict(WriteConflictError.FILE)));
+
+        DropboxError error = DropboxErrorMapper.map("move", exception);
+
+        assertEquals("PATH_CONFLICT", error.code());
+        assertEquals("Dropbox destination path already exists", error.message());
+        assertFalse(error.retryable());
+        assertEquals("move", error.operation());
+    }
+
+    @Test
+    void mapsMoveInternalErrorAsRetryable() {
+        RelocationErrorException exception = relocationException(RelocationError.INTERNAL_ERROR);
+
+        DropboxError error = DropboxErrorMapper.map("move", exception);
+
+        assertEquals("TEMPORARY_UNAVAILABLE", error.code());
+        assertEquals("Dropbox move failed with a temporary internal error", error.message());
+        assertTrue(error.retryable());
+        assertEquals("move", error.operation());
+    }
+
+    @Test
+    void mapsMovePermissionDenied() {
+        RelocationErrorException exception = relocationException(RelocationError.to(WriteError.NO_WRITE_PERMISSION));
+
+        DropboxError error = DropboxErrorMapper.map("move", exception);
+
+        assertEquals("PERMISSION_DENIED", error.code());
+        assertEquals("Dropbox path permission denied", error.message());
+        assertFalse(error.retryable());
+        assertEquals("move", error.operation());
+    }
+
+    @Test
+    void mapsMoveInsufficientQuota() {
+        RelocationErrorException exception = relocationException(RelocationError.INSUFFICIENT_QUOTA);
+
+        DropboxError error = DropboxErrorMapper.map("move", exception);
+
+        assertEquals("QUOTA_EXCEEDED", error.code());
+        assertEquals("Insufficient Dropbox storage quota", error.message());
+        assertFalse(error.retryable());
+        assertEquals("move", error.operation());
+    }
+
+    @Test
+    void mapsMoveSourcePermissionDenied() {
+        RelocationErrorException exception =
+                relocationException(RelocationError.fromWrite(WriteError.NO_WRITE_PERMISSION));
+
+        DropboxError error = DropboxErrorMapper.map("move", exception);
+
+        assertEquals("PERMISSION_DENIED", error.code());
+        assertFalse(error.retryable());
+    }
+
+    private static RelocationErrorException relocationException(RelocationError error) {
+        return new RelocationErrorException("2/files/move_v2", "test-request-id", null, error);
     }
 }
