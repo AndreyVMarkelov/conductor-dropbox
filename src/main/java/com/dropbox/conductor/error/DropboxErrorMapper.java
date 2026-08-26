@@ -152,6 +152,87 @@ public final class DropboxErrorMapper {
             }
         }
 
+        if (exception instanceof GetMetadataErrorException metadataException) {
+            var error = metadataException.errorValue;
+            if (error.isPath()) {
+                var lookup = error.getPathValue();
+                if (lookup.isNotFound()) {
+                    return error(DropboxErrorCode.PATH_NOT_FOUND, "Dropbox path does not exist", false, operation);
+                }
+
+                if (lookup.isRestrictedContent()) {
+                    return error(DropboxErrorCode.PERMISSION_DENIED, "Dropbox content is restricted", false, operation);
+                }
+            }
+        }
+
+        if (exception instanceof SearchErrorException searchException) {
+            var error = searchException.errorValue;
+
+            if (error.isPath()) {
+                var lookup = error.getPathValue();
+
+                if (lookup.isNotFound()) {
+                    return error(
+                            DropboxErrorCode.PATH_NOT_FOUND, "Dropbox search path does not exist", false, operation);
+                }
+
+                if (lookup.isNotFolder()) {
+                    return error(
+                            DropboxErrorCode.INVALID_INPUT, "Dropbox search path is not a folder", false, operation);
+                }
+
+                if (lookup.isRestrictedContent()) {
+                    return error(
+                            DropboxErrorCode.PERMISSION_DENIED, "Dropbox search path is restricted", false, operation);
+                }
+            }
+
+            if (error.isInvalidArgument()) {
+                return error(DropboxErrorCode.INVALID_INPUT, "Invalid Dropbox search arguments", false, operation);
+            }
+
+            if (error.isInternalError()) {
+                return error(
+                        DropboxErrorCode.TEMPORARY_UNAVAILABLE,
+                        "Dropbox search failed with a temporary internal error",
+                        true,
+                        operation);
+            }
+        }
+
+        if (exception instanceof ListFolderContinueErrorException continueException) {
+            var error = continueException.errorValue;
+
+            if (error.isPath()) {
+                var lookup = error.getPathValue();
+
+                if (lookup.isNotFound()) {
+                    return error(DropboxErrorCode.PATH_NOT_FOUND, "Dropbox folder does not exist", false, operation);
+                }
+
+                if (lookup.isNotFolder()) {
+                    return error(DropboxErrorCode.INVALID_INPUT, "Dropbox path is not a folder", false, operation);
+                }
+
+                if (lookup.isRestrictedContent()) {
+                    return error(
+                            DropboxErrorCode.PERMISSION_DENIED,
+                            "Dropbox folder content is restricted",
+                            false,
+                            operation);
+                }
+            }
+
+            if (error.isReset()) {
+                return error(
+                        DropboxErrorCode.INVALID_INPUT,
+                        "Dropbox folder cursor is no longer valid and the listing must be restarted",
+                        false,
+                        operation);
+            }
+        }
+
         if (exception instanceof InvalidAccessTokenException) {
             return error(DropboxErrorCode.AUTH_ERROR, "Dropbox access token is invalid or expired", false, operation);
         }

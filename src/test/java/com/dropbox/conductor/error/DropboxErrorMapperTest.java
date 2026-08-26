@@ -221,6 +221,58 @@ class DropboxErrorMapperTest {
         assertEquals("list_folder", error.operation());
     }
 
+    @Test
+    void mapsGetMetadataNotFoundAsNonRetryablePathNotFound() {
+        GetMetadataErrorException exception = new GetMetadataErrorException(
+                "request-id", "path/not_found/", null, GetMetadataError.path(LookupError.NOT_FOUND));
+
+        DropboxError error = DropboxErrorMapper.map("get_metadata", exception);
+
+        assertEquals(DropboxErrorCode.PATH_NOT_FOUND.name(), error.code());
+        assertEquals("Dropbox path does not exist", error.message());
+        assertFalse(error.retryable());
+        assertEquals("get_metadata", error.operation());
+    }
+
+    @Test
+    void mapsInvalidSearchArgumentAsNonRetryableInvalidInput() {
+        SearchErrorException exception = new SearchErrorException(
+                "request-id", "invalid_argument/", null, SearchError.invalidArgument("invalid search"));
+
+        DropboxError error = DropboxErrorMapper.map("search", exception);
+
+        assertEquals(DropboxErrorCode.INVALID_INPUT.name(), error.code());
+        assertEquals("Invalid Dropbox search arguments", error.message());
+        assertFalse(error.retryable());
+        assertEquals("search", error.operation());
+    }
+
+    @Test
+    void mapsSearchInternalErrorAsRetryableTemporaryUnavailable() {
+        SearchErrorException exception =
+                new SearchErrorException("request-id", "internal_error/", null, SearchError.INTERNAL_ERROR);
+
+        DropboxError error = DropboxErrorMapper.map("search", exception);
+
+        assertEquals(DropboxErrorCode.TEMPORARY_UNAVAILABLE.name(), error.code());
+        assertEquals("Dropbox search failed with a temporary internal error", error.message());
+        assertTrue(error.retryable());
+        assertEquals("search", error.operation());
+    }
+
+    @Test
+    void mapsListFolderCursorResetAsNonRetryableInvalidInput() {
+        ListFolderContinueErrorException exception =
+                new ListFolderContinueErrorException("request-id", "reset/", null, ListFolderContinueError.RESET);
+
+        DropboxError error = DropboxErrorMapper.map("list_folder", exception);
+
+        assertEquals(DropboxErrorCode.INVALID_INPUT.name(), error.code());
+        assertEquals("Dropbox folder cursor is no longer valid and the listing must be restarted", error.message());
+        assertFalse(error.retryable());
+        assertEquals("list_folder", error.operation());
+    }
+
     private static RelocationErrorException relocationException(RelocationError error) {
         return new RelocationErrorException("2/files/move_v2", "test-request-id", null, error);
     }
