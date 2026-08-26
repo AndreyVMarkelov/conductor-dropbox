@@ -33,19 +33,6 @@ class ExtractMarkdownWorkerTest {
     }
 
     @Test
-    void rejectsRetriesBecauseStartingAnotherJobIsUnsafe() {
-        Task task = new Task();
-        task.setRetryCount(1);
-        task.setInputData(Map.of("fileId", "id:file-1"));
-
-        TaskResult result = new ExtractMarkdownWorker(null).execute(task);
-
-        assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
-        assertEquals("INVALID_INPUT", result.getOutputData().get("errorCode"));
-        assertEquals("markdown extraction cannot be safely retried", result.getReasonForIncompletion());
-    }
-
-    @Test
     void returnsMarkdownWhenJobCompletes() throws Exception {
         DbxClientV2 dropbox = mock(DbxClientV2.class);
         DbxUserRivieraRequests riviera = mock(DbxUserRivieraRequests.class);

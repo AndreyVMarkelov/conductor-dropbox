@@ -40,9 +40,6 @@ public final class ExtractMarkdownWorker implements Worker {
         if (fileId == null || fileId.isBlank()) {
             return TaskResults.invalidInput(task, OPERATION, "fileId is required");
         }
-        if (task.getRetryCount() > 0) {
-            return TaskResults.invalidInput(task, OPERATION, "markdown extraction cannot be safely retried");
-        }
 
         try {
             var launch = dropbox.riviera()
