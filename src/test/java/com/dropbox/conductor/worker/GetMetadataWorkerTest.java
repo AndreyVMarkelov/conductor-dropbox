@@ -89,4 +89,15 @@ class GetMetadataWorkerTest {
 
         verifyNoInteractions(dropbox);
     }
+
+    @Test
+    void rejectsNonStringPath() {
+        Task task = new Task();
+        task.setInputData(Map.of("path", 42));
+
+        TaskResult result = new GetMetadataWorker(null).execute(task);
+
+        assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
+        assertEquals("INVALID_INPUT", result.getOutputData().get("errorCode"));
+    }
 }

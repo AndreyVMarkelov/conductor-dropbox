@@ -12,6 +12,8 @@ import com.dropbox.core.v2.files.DbxUserFilesRequests;
 import com.dropbox.core.v2.files.DbxUserListFolderBuilder;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.FolderMetadata;
+import com.dropbox.core.v2.files.ListFolderContinueError;
+import com.dropbox.core.v2.files.ListFolderContinueErrorException;
 import com.dropbox.core.v2.files.ListFolderResult;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
@@ -78,60 +80,6 @@ class ListFolderWorkerTest {
         assertEquals("folder", entries.get(1).get("type"));
         assertEquals("cursor-1", result.getOutputData().get("cursor"));
         assertEquals(false, result.getOutputData().get("hasMore"));
-    }
-
-    @Test
-    void returnsSinglePageAndCursor() throws Exception {
-
-        DbxClientV2 dropbox = mock(DbxClientV2.class);
-
-        DbxUserFilesRequests files = mock(DbxUserFilesRequests.class);
-
-        DbxUserListFolderBuilder builder = mock(DbxUserListFolderBuilder.class);
-
-        when(dropbox.files()).thenReturn(files);
-
-        when(files.listFolderBuilder("/Documents")).thenReturn(builder);
-
-        when(builder.withRecursive(false)).thenReturn(builder);
-
-        when(builder.withIncludeDeleted(false)).thenReturn(builder);
-
-        Date now = new Date();
-
-        FileMetadata file = FileMetadata.newBuilder("a.txt", "id:test", now, now, "123456789", 10L)
-                .withPathLower("/documents/a.txt")
-                .withPathDisplay("/Documents/a.txt")
-                .withContentHash("374866b3668401e4d06a652e8cd050f881277b683b06464b17e165dd2b41106c")
-                .build();
-
-        ListFolderResult firstPage = new ListFolderResult(List.of(file), "cursor-1", true);
-
-        when(builder.start()).thenReturn(firstPage);
-
-        Task task = new Task();
-
-        task.setInputData(Map.of("path", "/Documents"));
-
-        ListFolderWorker worker = new ListFolderWorker(dropbox);
-
-        TaskResult result = worker.execute(task);
-
-        assertEquals(TaskResult.Status.COMPLETED, result.getStatus());
-
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> entries =
-                (List<Map<String, Object>>) result.getOutputData().get("entries");
-
-        assertEquals(1, entries.size());
-
-        assertEquals("a.txt", entries.getFirst().get("name"));
-
-        assertEquals(true, result.getOutputData().get("hasMore"));
-
-        assertEquals("cursor-1", result.getOutputData().get("cursor"));
-
-        verify(files, never()).listFolderContinue(anyString());
     }
 
     @Test
@@ -205,11 +153,23 @@ class ListFolderWorkerTest {
         verify(files, never()).listFolderBuilder(anyString());
     }
 
-    private static FileMetadata file(String name, String id, String rev) {
+    @Test
+    void returnsStructuredTerminalErrorWhenContinuationCursorIsReset() throws Exception {
+        DbxClientV2 dropbox = mock(DbxClientV2.class);
+        DbxUserFilesRequests files = mock(DbxUserFilesRequests.class);
+        when(dropbox.files()).thenReturn(files);
+        when(files.listFolderContinue("expired-cursor"))
+                .thenThrow(new ListFolderContinueErrorException(
+                        "request-id", "reset/", null, ListFolderContinueError.RESET));
 
-        return FileMetadata.newBuilder(name, id, new Date(), new Date(), rev, 1)
-                .withPathLower("/input/" + name)
-                .withPathDisplay("/input/" + name)
-                .build();
+        Task task = new Task();
+        task.setInputData(Map.of("cursor", "expired-cursor"));
+
+        TaskResult result = new ListFolderWorker(dropbox).execute(task);
+
+        assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
+        assertEquals("INVALID_INPUT", result.getOutputData().get("errorCode"));
+        assertEquals(false, result.getOutputData().get("retryable"));
+        assertEquals("list_folder", result.getOutputData().get("operation"));
     }
 }

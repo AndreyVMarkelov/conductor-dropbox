@@ -23,7 +23,7 @@ public final class GetMetadataWorker implements Worker {
 
     @Override
     public TaskResult execute(Task task) {
-        String path = (String) task.getInputData().get("path");
+        String path = TaskInputs.string(task, "path");
 
         if (path == null || path.isBlank()) {
             return TaskResults.invalidInput(task, "get_metadata", "path is required");

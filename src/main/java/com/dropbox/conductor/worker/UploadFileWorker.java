@@ -29,9 +29,9 @@ public final class UploadFileWorker implements Worker {
 
     @Override
     public TaskResult execute(Task task) {
-        String path = (String) task.getInputData().get("path");
-        String content = (String) task.getInputData().get("content");
-        String mode = (String) task.getInputData().getOrDefault("mode", "ADD");
+        String path = TaskInputs.string(task, "path");
+        String content = TaskInputs.string(task, "content");
+        String mode = task.getInputData().containsKey("mode") ? TaskInputs.string(task, "mode") : "ADD";
         boolean autorename = Boolean.TRUE.equals(task.getInputData().get("autorename"));
 
         if (path == null || path.isBlank()) {
@@ -42,7 +42,11 @@ public final class UploadFileWorker implements Worker {
             return TaskResults.invalidInput(task, "upload_file", "content is required");
         }
 
-        if (task.getRetryCount() > 0 && "ADD".equalsIgnoreCase(mode) && autorename) {
+        if (!"ADD".equals(mode) && !"OVERWRITE".equals(mode)) {
+            return TaskResults.invalidInput(task, "upload_file", "mode must be ADD or OVERWRITE");
+        }
+
+        if (task.getRetryCount() > 0 && "ADD".equals(mode) && autorename) {
             return TaskResults.invalidInput(task, "upload_file", "ADD with autorename cannot be safely retried");
         }
 
@@ -53,7 +57,7 @@ public final class UploadFileWorker implements Worker {
                     switch (mode) {
                         case "ADD" -> WriteMode.ADD;
                         case "OVERWRITE" -> WriteMode.OVERWRITE;
-                        default -> throw new IllegalArgumentException("Unsupported upload mode: " + mode);
+                        default -> throw new IllegalStateException("Validated upload mode is unsupported: " + mode);
                     };
 
             FileMetadata metadata;

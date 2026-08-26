@@ -7,6 +7,10 @@ import static org.mockito.Mockito.mock;
 
 import com.dropbox.core.DbxException;
 import com.dropbox.core.InvalidAccessTokenException;
+import com.dropbox.core.RetryException;
+import com.dropbox.core.ServerException;
+import com.dropbox.core.v2.files.DownloadError;
+import com.dropbox.core.v2.files.DownloadErrorException;
 import com.dropbox.core.v2.files.GetMetadataError;
 import com.dropbox.core.v2.files.GetMetadataErrorException;
 import com.dropbox.core.v2.files.ListFolderContinueError;
@@ -43,6 +47,29 @@ class DropboxErrorMapperTest {
         assertEquals("network failure", error.message());
         assertTrue(error.retryable());
         assertEquals("download_file", error.operation());
+    }
+
+    @Test
+    void mapsSdkRetryAndServerErrorsAsRetryableTemporaryUnavailable() {
+        DropboxError retryError = DropboxErrorMapper.map("upload_file", new RetryException("request-id", "retry"));
+        DropboxError serverError = DropboxErrorMapper.map("upload_file", new ServerException("request-id", "server"));
+
+        assertEquals(DropboxErrorCode.TEMPORARY_UNAVAILABLE.name(), retryError.code());
+        assertTrue(retryError.retryable());
+        assertEquals(DropboxErrorCode.TEMPORARY_UNAVAILABLE.name(), serverError.code());
+        assertTrue(serverError.retryable());
+    }
+
+    @Test
+    void mapsDownloadPathNotFound() {
+        DownloadErrorException exception = new DownloadErrorException(
+                "request-id", "path/not_found/", null, DownloadError.path(LookupError.NOT_FOUND));
+
+        DropboxError error = DropboxErrorMapper.map("download_file", exception);
+
+        assertEquals(DropboxErrorCode.PATH_NOT_FOUND.name(), error.code());
+        assertEquals("Dropbox download path does not exist", error.message());
+        assertFalse(error.retryable());
     }
 
     @Test

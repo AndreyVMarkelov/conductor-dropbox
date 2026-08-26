@@ -85,4 +85,29 @@ class UploadFileWorkerTest {
         assertEquals("upload_file", result.getOutputData().get("operation"));
         assertEquals("ADD with autorename cannot be safely retried", result.getReasonForIncompletion());
     }
+
+    @Test
+    void rejectsInvalidUploadModeBeforeCallingDropbox() {
+        var task = new Task();
+        task.setInputData(Map.of("path", "/file.txt", "content", "SGVsbG8=", "mode", "add"));
+
+        var result = new UploadFileWorker(null).execute(task);
+
+        assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
+        assertEquals("INVALID_INPUT", result.getOutputData().get("errorCode"));
+        assertEquals("mode must be ADD or OVERWRITE", result.getReasonForIncompletion());
+    }
+
+    @Test
+    void returnsStructuredInvalidInputForMalformedBase64Content() {
+        var task = new Task();
+        task.setInputData(Map.of("path", "/file.txt", "content", "not base64"));
+
+        var result = new UploadFileWorker(null).execute(task);
+
+        assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
+        assertEquals("INVALID_INPUT", result.getOutputData().get("errorCode"));
+        assertEquals(false, result.getOutputData().get("retryable"));
+        assertEquals("upload_file", result.getOutputData().get("operation"));
+    }
 }

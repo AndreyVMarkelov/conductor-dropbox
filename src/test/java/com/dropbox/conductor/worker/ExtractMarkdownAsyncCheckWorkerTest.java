@@ -6,7 +6,9 @@ import static org.mockito.Mockito.when;
 
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.riviera.DbxUserRivieraRequests;
+import com.dropbox.core.v2.riviera.ErrorCode;
 import com.dropbox.core.v2.riviera.GetMarkdownAsyncCheckResult;
+import com.dropbox.core.v2.riviera.GetMarkdownAsyncError;
 import com.dropbox.core.v2.riviera.GetMarkdownResult;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
@@ -87,5 +89,28 @@ class ExtractMarkdownAsyncCheckWorkerTest {
         assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
 
         assertEquals("extract_markdown_async_check", result.getOutputData().get("operation"));
+    }
+
+    @Test
+    void mapsFailedJobStatusToStructuredRetryableError() throws Exception {
+        DbxClientV2 dropbox = mock(DbxClientV2.class);
+        DbxUserRivieraRequests riviera = mock(DbxUserRivieraRequests.class);
+        GetMarkdownAsyncCheckResult checkResult = mock(GetMarkdownAsyncCheckResult.class);
+        GetMarkdownAsyncError error = mock(GetMarkdownAsyncError.class);
+
+        when(dropbox.riviera()).thenReturn(riviera);
+        when(riviera.getMarkdownAsyncCheck("job-123")).thenReturn(checkResult);
+        when(checkResult.isFailed()).thenReturn(true);
+        when(checkResult.getFailedValue()).thenReturn(error);
+        when(error.getErrorCode()).thenReturn(ErrorCode.UNAVAILABLE);
+
+        Task task = new Task();
+        task.setInputData(Map.of("asyncJobId", "job-123"));
+
+        TaskResult result = new ExtractMarkdownAsyncCheckWorker(dropbox).execute(task);
+
+        assertEquals(TaskResult.Status.FAILED, result.getStatus());
+        assertEquals("TEMPORARY_UNAVAILABLE", result.getOutputData().get("errorCode"));
+        assertEquals(true, result.getOutputData().get("retryable"));
     }
 }

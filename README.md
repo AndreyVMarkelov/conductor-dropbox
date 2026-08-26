@@ -490,6 +490,14 @@ The initial release focuses on:
 
 Potential future work includes Dropbox team authentication, member-scoped execution, team namespace support, shared links, revisions, restore, metadata, batch operations, and change-driven workflows.
 
+## Contributing
+
+Contributions are welcome.
+
+If you'd like to add a Dropbox capability, improve an existing worker, add workflow examples, or help with Dropbox Sign and webhook support, feel free to open an issue or pull request.
+
+See [`ROADMAP.md`](ROADMAP.md) for planned work and areas where contributions would be especially useful.
+
 ## Security
 
 Do not commit Dropbox access tokens, refresh tokens, app credentials, or other secrets to the repository.

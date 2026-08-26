@@ -29,7 +29,7 @@ public final class SearchWorker implements Worker {
 
     @Override
     public TaskResult execute(Task task) {
-        String cursor = (String) task.getInputData().get("cursor");
+        String cursor = TaskInputs.string(task, "cursor");
 
         try {
             if (cursor != null && !cursor.isBlank()) {
@@ -38,7 +38,7 @@ public final class SearchWorker implements Worker {
                 return TaskResults.completed(task, searchOutput(result));
             }
 
-            String query = (String) task.getInputData().get("query");
+            String query = TaskInputs.string(task, "query");
 
             if (query == null || query.isBlank()) {
                 return TaskResults.invalidInput(task, "search", "query is required when cursor is not provided");
@@ -46,7 +46,7 @@ public final class SearchWorker implements Worker {
 
             var builder = dropbox.files().searchV2Builder(query);
 
-            String path = (String) task.getInputData().get("path");
+            String path = TaskInputs.string(task, "path");
 
             Object maxResultsValue = task.getInputData().get("maxResults");
 

@@ -1,7 +1,6 @@
 package com.dropbox.conductor.worker;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
@@ -25,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class SearchWorkerTest {
 
@@ -96,7 +96,10 @@ class SearchWorkerTest {
 
         assertEquals(TaskResult.Status.COMPLETED, result.getStatus());
 
-        verify(builder).withOptions(any(SearchOptions.class));
+        ArgumentCaptor<SearchOptions> options = ArgumentCaptor.forClass(SearchOptions.class);
+        verify(builder).withOptions(options.capture());
+        assertEquals("/Documents", options.getValue().getPath());
+        assertEquals(10L, options.getValue().getMaxResults());
         verify(builder).start();
     }
 
@@ -157,7 +160,9 @@ class SearchWorkerTest {
 
         TaskResult result = worker.execute(task);
 
-        assertNotEquals(TaskResult.Status.COMPLETED, result.getStatus());
+        assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
+        assertEquals("INVALID_INPUT", result.getOutputData().get("errorCode"));
+        assertEquals("search", result.getOutputData().get("operation"));
 
         verifyNoInteractions(dropbox);
     }
@@ -173,7 +178,9 @@ class SearchWorkerTest {
 
         TaskResult result = worker.execute(task);
 
-        assertNotEquals(TaskResult.Status.COMPLETED, result.getStatus());
+        assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
+        assertEquals("INVALID_INPUT", result.getOutputData().get("errorCode"));
+        assertEquals("search", result.getOutputData().get("operation"));
 
         verifyNoInteractions(dropbox);
     }
@@ -196,7 +203,8 @@ class SearchWorkerTest {
 
         TaskResult result = worker.execute(task);
 
-        assertNotEquals(TaskResult.Status.COMPLETED, result.getStatus());
+        assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
+        assertEquals("INVALID_INPUT", result.getOutputData().get("errorCode"));
 
         verify(builder, never()).start();
     }
@@ -217,7 +225,8 @@ class SearchWorkerTest {
 
         TaskResult result = worker.execute(task);
 
-        assertNotEquals(TaskResult.Status.COMPLETED, result.getStatus());
+        assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
+        assertEquals("INVALID_INPUT", result.getOutputData().get("errorCode"));
 
         verify(builder, never()).start();
     }
