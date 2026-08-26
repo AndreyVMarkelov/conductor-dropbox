@@ -1,6 +1,12 @@
 package com.dropbox.conductor.dropbox;
 
-import com.dropbox.core.*;
+import com.dropbox.core.DbxAppInfo;
+import com.dropbox.core.DbxAuthFinish;
+import com.dropbox.core.DbxException;
+import com.dropbox.core.DbxPKCEWebAuth;
+import com.dropbox.core.DbxRequestConfig;
+import com.dropbox.core.DbxWebAuth;
+import com.dropbox.core.TokenAccessType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

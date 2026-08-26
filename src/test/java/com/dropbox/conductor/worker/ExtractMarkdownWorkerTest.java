@@ -1,7 +1,11 @@
 package com.dropbox.conductor.worker;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.async.LaunchResultBase;
@@ -24,9 +28,7 @@ class ExtractMarkdownWorkerTest {
         TaskResult result = new ExtractMarkdownWorker(null).execute(task);
 
         assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
-
         assertEquals("INVALID_INPUT", result.getOutputData().get("errorCode"));
-
         assertEquals("extract_markdown", result.getOutputData().get("operation"));
     }
 
@@ -116,7 +118,6 @@ class ExtractMarkdownWorkerTest {
         TaskResult result = new ExtractMarkdownWorker(dropbox).execute(task);
 
         assertEquals(TaskResult.Status.FAILED_WITH_TERMINAL_ERROR, result.getStatus());
-
         assertEquals("extract_markdown", result.getOutputData().get("operation"));
     }
 }

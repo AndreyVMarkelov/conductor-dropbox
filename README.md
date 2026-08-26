@@ -10,6 +10,8 @@ Build durable workflows around Dropbox files, folders, search, and document proc
 
 `conductor-dropbox` runs as an external Conductor worker and can be used with self-hosted Conductor or Orkes.
 
+![conductor-dropbox overview](docs/images/conductor-dropbox-overview.png)
+
 ## Features
 
 - List Dropbox files and folders

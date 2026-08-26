@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'application'
     id 'com.diffplug.spotless' version '7.2.1'
+    id 'checkstyle'
 }
 
 group = 'com.dropbox.conductor'
@@ -23,6 +24,12 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+}
+
+checkstyle {
+    toolVersion = '10.26.1'
+    configFile = file('config/checkstyle/checkstyle.xml')
+    maxWarnings = 0
 }
 
 spotless {
@@ -51,7 +58,7 @@ tasks.register('dropboxLogin', JavaExec) {
 }
 
 tasks.named('check') {
-    dependsOn 'spotlessCheck'
+    dependsOn 'spotlessCheck', 'checkstyleMain', 'checkstyleTest'
 }
 
 dependencies {
