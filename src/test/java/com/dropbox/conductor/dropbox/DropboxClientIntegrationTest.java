@@ -1,6 +1,8 @@
 package com.dropbox.conductor.dropbox;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.dropbox.core.v2.DbxClientV2;
 import org.junit.jupiter.api.Test;

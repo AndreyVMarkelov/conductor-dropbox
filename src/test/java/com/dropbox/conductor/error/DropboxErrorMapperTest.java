@@ -1,11 +1,26 @@
 package com.dropbox.conductor.error;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import com.dropbox.core.DbxException;
 import com.dropbox.core.InvalidAccessTokenException;
-import com.dropbox.core.v2.files.*;
+import com.dropbox.core.v2.files.GetMetadataError;
+import com.dropbox.core.v2.files.GetMetadataErrorException;
+import com.dropbox.core.v2.files.ListFolderContinueError;
+import com.dropbox.core.v2.files.ListFolderContinueErrorException;
+import com.dropbox.core.v2.files.LookupError;
+import com.dropbox.core.v2.files.RelocationError;
+import com.dropbox.core.v2.files.RelocationErrorException;
+import com.dropbox.core.v2.files.SearchError;
+import com.dropbox.core.v2.files.SearchErrorException;
+import com.dropbox.core.v2.files.UploadError;
+import com.dropbox.core.v2.files.UploadErrorException;
+import com.dropbox.core.v2.files.UploadWriteFailed;
+import com.dropbox.core.v2.files.WriteConflictError;
+import com.dropbox.core.v2.files.WriteError;
 import org.junit.jupiter.api.Test;
 
 class DropboxErrorMapperTest {

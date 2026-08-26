@@ -2,10 +2,18 @@ plugins {
     id 'java-library'
     id 'application'
     id 'com.diffplug.spotless' version '7.2.1'
+    id 'checkstyle'
+    id 'pl.allegro.tech.build.axion-release' version '1.21.3'
 }
 
 group = 'com.dropbox.conductor'
-version = '0.1.0-SNAPSHOT'
+scmVersion {
+    tag {
+        prefix = 'v'
+    }
+    versionIncrementer 'incrementMinor'
+}
+version = scmVersion.version
 
 repositories {
     mavenCentral()
@@ -23,6 +31,12 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+}
+
+checkstyle {
+    toolVersion = '10.26.1'
+    configFile = file('config/checkstyle/checkstyle.xml')
+    maxWarnings = 0
 }
 
 spotless {
@@ -50,8 +64,12 @@ tasks.register('dropboxLogin', JavaExec) {
     standardInput = System.in
 }
 
+tasks.named('release') {
+    dependsOn 'check'
+}
+
 tasks.named('check') {
-    dependsOn 'spotlessCheck'
+    dependsOn 'spotlessCheck', 'checkstyleMain', 'checkstyleTest'
 }
 
 dependencies {

@@ -4,7 +4,14 @@ import com.dropbox.core.DbxApiException;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.InvalidAccessTokenException;
 import com.dropbox.core.RateLimitException;
-import com.dropbox.core.v2.files.*;
+import com.dropbox.core.v2.files.CreateFolderErrorException;
+import com.dropbox.core.v2.files.DeleteErrorException;
+import com.dropbox.core.v2.files.GetMetadataErrorException;
+import com.dropbox.core.v2.files.ListFolderContinueErrorException;
+import com.dropbox.core.v2.files.ListFolderErrorException;
+import com.dropbox.core.v2.files.RelocationErrorException;
+import com.dropbox.core.v2.files.SearchErrorException;
+import com.dropbox.core.v2.files.UploadErrorException;
 
 public final class DropboxErrorMapper {
 

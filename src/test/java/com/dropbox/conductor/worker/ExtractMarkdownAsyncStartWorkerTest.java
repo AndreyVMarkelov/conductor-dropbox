@@ -1,7 +1,10 @@
 package com.dropbox.conductor.worker;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.async.LaunchResultBase;
