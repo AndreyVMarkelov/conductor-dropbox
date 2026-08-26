@@ -1,5 +1,9 @@
 # conductor-dropbox
 
+[![CI](https://github.com/AndreyVMarkelov/conductor-dropbox/actions/workflows/ci.yml/badge.svg)](https://github.com/AndreyVMarkelov/conductor-dropbox/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/AndreyVMarkelov/conductor-dropbox)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/AndreyVMarkelov/conductor-dropbox)](https://github.com/AndreyVMarkelov/conductor-dropbox/releases)
+
 Dropbox integration for Conductor and Orkes workflows.
 
 Build durable workflows around Dropbox files, folders, search, and document processing without writing Dropbox API glue for every workflow.
@@ -465,6 +469,8 @@ docker build -t conductor-dropbox:local .
 ```
 
 ## Project status
+
+See [`ROADMAP.md`](ROADMAP.md) for planned Dropbox Sign, webhooks, durable events, and Dropbox Business support.
 
 The project is under active development.
 
