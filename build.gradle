@@ -3,10 +3,17 @@ plugins {
     id 'application'
     id 'com.diffplug.spotless' version '7.2.1'
     id 'checkstyle'
+    id 'pl.allegro.tech.build.axion-release' version '1.21.3'
 }
 
 group = 'com.dropbox.conductor'
-version = '0.1.0-SNAPSHOT'
+scmVersion {
+    tag {
+        prefix = 'v'
+    }
+    versionIncrementer 'incrementMinor'
+}
+version = scmVersion.version
 
 repositories {
     mavenCentral()
@@ -55,6 +62,10 @@ tasks.register('dropboxLogin', JavaExec) {
     mainClass = 'com.dropbox.conductor.dropbox.DropboxPkceLogin'
 
     standardInput = System.in
+}
+
+tasks.named('release') {
+    dependsOn 'check'
 }
 
 tasks.named('check') {
