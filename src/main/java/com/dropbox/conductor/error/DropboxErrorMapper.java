@@ -154,10 +154,8 @@ public final class DropboxErrorMapper {
 
         if (exception instanceof GetMetadataErrorException metadataException) {
             var error = metadataException.errorValue;
-
             if (error.isPath()) {
                 var lookup = error.getPathValue();
-
                 if (lookup.isNotFound()) {
                     return error(DropboxErrorCode.PATH_NOT_FOUND, "Dropbox path does not exist", false, operation);
                 }
