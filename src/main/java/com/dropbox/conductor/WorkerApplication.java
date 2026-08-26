@@ -10,7 +10,9 @@ import java.util.List;
 public class WorkerApplication {
 
     public static void main(String[] args) {
-        var client = new ConductorClient("http://localhost:8080/api");
+        String conductorUrl = System.getenv().getOrDefault("CONDUCTOR_URL", "http://localhost:8080/api");
+        var client = new ConductorClient(conductorUrl);
+        int workerThreadCount = workerThreadCount();
         var taskClient = new TaskClient(client);
 
         var dropbox = DropboxClientProvider.create();
@@ -29,12 +31,28 @@ public class WorkerApplication {
                                 new GetMetadataWorker(dropbox),
                                 new SearchWorker(dropbox),
                                 new ListFolderWorker(dropbox)))
-                .withThreadCount(2)
+                .withThreadCount(workerThreadCount)
                 .build();
         configurer.init();
 
-        System.out.println("Dropbox workers started");
+        System.out.printf("Dropbox workers started: conductor=%s, threads=%d%n", conductorUrl, workerThreadCount);
 
         Runtime.getRuntime().addShutdownHook(new Thread(configurer::shutdown));
+    }
+
+    private static int workerThreadCount() {
+        String value = System.getenv().getOrDefault("WORKER_THREAD_COUNT", "2");
+
+        try {
+            int count = Integer.parseInt(value);
+
+            if (count <= 0) {
+                throw new IllegalArgumentException("WORKER_THREAD_COUNT must be greater than 0");
+            }
+
+            return count;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("WORKER_THREAD_COUNT must be a positive integer", e);
+        }
     }
 }
