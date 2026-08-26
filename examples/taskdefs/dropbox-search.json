@@ -1,0 +1,11 @@
+{
+  "name": "dropbox_search",
+  "description": "Search files and folders in Dropbox",
+  "retryCount": 3,
+  "retryLogic": "FIXED",
+  "retryDelaySeconds": 2,
+  "timeoutPolicy": "TIME_OUT_WF",
+  "timeoutSeconds": 60,
+  "responseTimeoutSeconds": 30
+}
+
