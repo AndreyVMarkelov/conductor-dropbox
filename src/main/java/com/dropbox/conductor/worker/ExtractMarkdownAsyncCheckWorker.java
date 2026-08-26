@@ -27,7 +27,7 @@ public final class ExtractMarkdownAsyncCheckWorker implements Worker {
 
     @Override
     public TaskResult execute(Task task) {
-        String asyncJobId = (String) task.getInputData().get("asyncJobId");
+        String asyncJobId = TaskInputs.string(task, "asyncJobId");
 
         if (asyncJobId == null || asyncJobId.isBlank()) {
             return TaskResults.invalidInput(task, OPERATION, "asyncJobId is required");
@@ -48,6 +48,10 @@ public final class ExtractMarkdownAsyncCheckWorker implements Worker {
                 output.put("status", "complete");
                 output.put("markdown", complete.getMarkdown());
                 return TaskResults.completed(task, output);
+            }
+
+            if (result.isFailed()) {
+                return TaskResults.failed(task, DropboxErrorMapper.mapRivieraError(OPERATION, result.getFailedValue()));
             }
 
             return TaskResults.failed(

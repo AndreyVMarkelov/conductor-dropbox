@@ -27,8 +27,8 @@ public final class MoveWorker implements Worker {
 
     @Override
     public TaskResult execute(Task task) {
-        String fromPath = (String) task.getInputData().get("fromPath");
-        String toPath = (String) task.getInputData().get("toPath");
+        String fromPath = TaskInputs.string(task, "fromPath");
+        String toPath = TaskInputs.string(task, "toPath");
         boolean autorename = Boolean.TRUE.equals(task.getInputData().get("autorename"));
 
         if (fromPath == null || fromPath.isBlank()) {

@@ -29,7 +29,7 @@ public final class ListFolderWorker implements Worker {
 
     @Override
     public TaskResult execute(Task task) {
-        String cursor = (String) task.getInputData().get("cursor");
+        String cursor = TaskInputs.string(task, "cursor");
 
         try {
             if (cursor != null && !cursor.isBlank()) {
@@ -38,7 +38,7 @@ public final class ListFolderWorker implements Worker {
                 return TaskResults.completed(task, listFolderOutput(result));
             }
 
-            String path = (String) task.getInputData().get("path");
+            String path = TaskInputs.string(task, "path");
 
             if (path == null || path.isBlank()) {
                 return TaskResults.invalidInput(task, "list_folder", "path is required when cursor is not provided");

@@ -12,6 +12,8 @@ public final class ExtractMarkdownAsyncStartWorker implements Worker {
 
     public static final String TASK_NAME = "dropbox_extract_markdown_async_start";
 
+    private static final String OPERATION = "extract_markdown_async_start";
+
     private final DbxClientV2 dropbox;
 
     public ExtractMarkdownAsyncStartWorker(DbxClientV2 dropbox) {
@@ -25,9 +27,12 @@ public final class ExtractMarkdownAsyncStartWorker implements Worker {
 
     @Override
     public TaskResult execute(Task task) {
-        String fileId = (String) task.getInputData().get("fileId");
+        String fileId = TaskInputs.string(task, "fileId");
         if (fileId == null || fileId.isBlank()) {
-            return TaskResults.invalidInput(task, "extract_markdown_async_start", "fileId is required");
+            return TaskResults.invalidInput(task, OPERATION, "fileId is required");
+        }
+        if (task.getRetryCount() > 0) {
+            return TaskResults.invalidInput(task, OPERATION, "markdown extraction start cannot be safely retried");
         }
 
         try {
@@ -37,7 +42,7 @@ public final class ExtractMarkdownAsyncStartWorker implements Worker {
                     .start();
             return TaskResults.completed(task, Map.of("asyncJobId", result.getAsyncJobIdValue()));
         } catch (Exception e) {
-            return TaskResults.failed(task, DropboxErrorMapper.map("extract_markdown_async_start", e));
+            return TaskResults.failed(task, DropboxErrorMapper.map(OPERATION, e));
         }
     }
 }

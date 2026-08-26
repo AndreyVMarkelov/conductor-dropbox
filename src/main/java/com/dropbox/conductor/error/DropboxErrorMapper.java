@@ -1,23 +1,44 @@
 package com.dropbox.conductor.error;
 
+import com.dropbox.core.AccessErrorException;
 import com.dropbox.core.DbxApiException;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.InvalidAccessTokenException;
 import com.dropbox.core.RateLimitException;
+import com.dropbox.core.RetryException;
+import com.dropbox.core.ServerException;
 import com.dropbox.core.v2.files.CreateFolderErrorException;
 import com.dropbox.core.v2.files.DeleteErrorException;
+import com.dropbox.core.v2.files.DownloadErrorException;
 import com.dropbox.core.v2.files.GetMetadataErrorException;
 import com.dropbox.core.v2.files.ListFolderContinueErrorException;
 import com.dropbox.core.v2.files.ListFolderErrorException;
+import com.dropbox.core.v2.files.LookupError;
 import com.dropbox.core.v2.files.RelocationErrorException;
 import com.dropbox.core.v2.files.SearchErrorException;
 import com.dropbox.core.v2.files.UploadErrorException;
+import com.dropbox.core.v2.riviera.GetMarkdownAsyncError;
+import com.dropbox.core.v2.riviera.MarkdownConversionApiV2Error;
 
 public final class DropboxErrorMapper {
 
     private DropboxErrorMapper() {}
 
     public static DropboxError map(String operation, Exception exception) {
+        if (exception instanceof DownloadErrorException downloadException) {
+            var error = downloadException.errorValue;
+            if (error.isPath()) {
+                return mapLookupError(operation, error.getPathValue(), "Dropbox download path");
+            }
+            if (error.isUnsupportedFile()) {
+                return error(
+                        DropboxErrorCode.OPERATION_NOT_SUPPORTED,
+                        "Dropbox does not support downloading this file",
+                        false,
+                        operation);
+            }
+        }
+
         if (exception instanceof DeleteErrorException deleteException) {
             if (deleteException.errorValue.isPathLookup()
                     && deleteException.errorValue.getPathLookupValue().isNotFound()) {
@@ -34,6 +55,14 @@ public final class DropboxErrorMapper {
 
         if (exception instanceof RateLimitException) {
             return error(DropboxErrorCode.RATE_LIMITED, "Dropbox rate limit exceeded", true, operation);
+        }
+
+        if (exception instanceof RetryException || exception instanceof ServerException) {
+            return error(DropboxErrorCode.TEMPORARY_UNAVAILABLE, "Dropbox is temporarily unavailable", true, operation);
+        }
+
+        if (exception instanceof AccessErrorException) {
+            return error(DropboxErrorCode.PERMISSION_DENIED, "Dropbox access is denied", false, operation);
         }
 
         if (exception instanceof RelocationErrorException relocationException) {
@@ -257,6 +286,65 @@ public final class DropboxErrorMapper {
         }
 
         return error(DropboxErrorCode.INTERNAL_ERROR, safeMessage(exception), false, operation);
+    }
+
+    public static DropboxError mapRivieraError(String operation, GetMarkdownAsyncError error) {
+        MarkdownConversionApiV2Error details = error.getErrorDetails();
+        if (details != null) {
+            if (details.isServerError()) {
+                return error(
+                        DropboxErrorCode.TEMPORARY_UNAVAILABLE,
+                        "Dropbox markdown conversion is temporarily unavailable",
+                        true,
+                        operation);
+            }
+            if (details.isUserError() || details.isLimitExceededError()) {
+                return error(DropboxErrorCode.INVALID_INPUT, "Invalid Dropbox markdown request", false, operation);
+            }
+            if (details.isUnsupportedFormatError()) {
+                return error(
+                        DropboxErrorCode.OPERATION_NOT_SUPPORTED,
+                        "Dropbox does not support this file format for markdown extraction",
+                        false,
+                        operation);
+            }
+            if (details.isLinkDownloadDisabledError() || details.isSharedLinkPasswordProtected()) {
+                return error(DropboxErrorCode.PERMISSION_DENIED, "Dropbox file cannot be accessed", false, operation);
+            }
+        }
+
+        return switch (error.getErrorCode()) {
+            case BAD_REQUEST ->
+                error(DropboxErrorCode.INVALID_INPUT, "Invalid Dropbox markdown request", false, operation);
+            case ACCESS_ERROR ->
+                error(DropboxErrorCode.PERMISSION_DENIED, "Dropbox file cannot be accessed", false, operation);
+            case RATELIMIT_ERROR ->
+                error(DropboxErrorCode.RATE_LIMITED, "Dropbox rate limit exceeded", true, operation);
+            case UNAVAILABLE ->
+                error(
+                        DropboxErrorCode.TEMPORARY_UNAVAILABLE,
+                        "Dropbox markdown conversion is temporarily unavailable",
+                        true,
+                        operation);
+            case API_ERROR, UNKNOWN_ERROR, OTHER ->
+                error(DropboxErrorCode.INTERNAL_ERROR, "Dropbox markdown conversion failed", false, operation);
+        };
+    }
+
+    private static DropboxError mapLookupError(String operation, LookupError error, String subject) {
+        if (error.isNotFound()) {
+            return error(DropboxErrorCode.PATH_NOT_FOUND, subject + " does not exist", false, operation);
+        }
+        if (error.isNotFile() || error.isNotFolder() || error.isMalformedPath()) {
+            return error(DropboxErrorCode.INVALID_INPUT, "Invalid " + subject.toLowerCase(), false, operation);
+        }
+        if (error.isRestrictedContent()) {
+            return error(DropboxErrorCode.PERMISSION_DENIED, subject + " is restricted", false, operation);
+        }
+        if (error.isLocked()) {
+            return error(DropboxErrorCode.TEMPORARY_UNAVAILABLE, subject + " is locked", true, operation);
+        }
+        return error(DropboxErrorCode.INTERNAL_ERROR, "Dropbox lookup failed", false, operation);
     }
 
     private static DropboxError error(DropboxErrorCode code, String message, boolean retryable, String operation) {

@@ -35,10 +35,13 @@ public final class ExtractMarkdownWorker implements Worker {
 
     @Override
     public TaskResult execute(Task task) {
-        String fileId = (String) task.getInputData().get("fileId");
+        String fileId = TaskInputs.string(task, "fileId");
 
         if (fileId == null || fileId.isBlank()) {
             return TaskResults.invalidInput(task, OPERATION, "fileId is required");
+        }
+        if (task.getRetryCount() > 0) {
+            return TaskResults.invalidInput(task, OPERATION, "markdown extraction cannot be safely retried");
         }
 
         try {
@@ -57,6 +60,11 @@ public final class ExtractMarkdownWorker implements Worker {
 
                     return TaskResults.completed(
                             task, Map.of("asyncJobId", asyncJobId, "markdown", markdownResult.getMarkdown()));
+                }
+
+                if (result.isFailed()) {
+                    return TaskResults.failed(
+                            task, DropboxErrorMapper.mapRivieraError(OPERATION, result.getFailedValue()));
                 }
 
                 if (!result.isInProgress()) {
