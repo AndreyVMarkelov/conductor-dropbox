@@ -17,7 +17,7 @@ class DropboxClientProviderTest {
 
     @Test
     void createsClientFromRefreshTokenAndAppKey() {
-        DbxClientV2 client = DropboxClientProvider.create(new DropboxCredentials("access-token", null, null));
+        DbxClientV2 client = DropboxClientProvider.create(new DropboxCredentials(null, "app-key", "refresh-token"));
 
         assertNotNull(client);
     }
@@ -45,7 +45,8 @@ class DropboxClientProviderTest {
 
     @Test
     void refreshTokenTakesPrecedenceOverAccessToken() {
-        DbxClientV2 client = DropboxClientProvider.create(new DropboxCredentials(null, "app-key", "refresh-token"));
+        DbxClientV2 client =
+                DropboxClientProvider.create(new DropboxCredentials("access-token", "app-key", "refresh-token"));
 
         assertNotNull(client);
     }
