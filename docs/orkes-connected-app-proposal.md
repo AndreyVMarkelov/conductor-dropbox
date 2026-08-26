@@ -53,13 +53,13 @@ The user should not need to manually manage short-lived Dropbox access tokens.
 | Orkes operation | Reference implementation | Purpose |
 | --- | --- | --- |
 | List Folder | `dropbox_list_folder` | List files and folders at a Dropbox path |
-| Get Metadata | planned `dropbox_get_metadata` | Retrieve file or folder metadata |
+| Get Metadata | `dropbox_get_metadata` | Retrieve file or folder metadata |
 | Create Folder | `dropbox_create_folder` | Create a Dropbox folder |
 | Move File or Folder | `dropbox_move` | Move or rename a file or folder |
 | Delete File or Folder | `dropbox_delete` | Delete a file or folder |
 | Upload File From Base64 | upload worker | Upload file content |
 | Download File Base64 | download worker | Download file content |
-| Search Files and Folders | planned search worker | Search Dropbox |
+| Search Files and Folders | `dropbox_search` | Search Dropbox |
 | Extract Markdown | `dropbox_extract_markdown` | Extract Markdown using Dropbox Riviera |
 
 ## Operation Contracts
@@ -140,16 +140,23 @@ For large files, a payload/reference mechanism should be considered to avoid unn
 
 ### Search Files and Folders
 
-Inputs:
+Initial search inputs:
 
 - `query`
-- optional path/scope
-- pagination options where supported
+- optional `path`
+- optional `maxResults`
+
+Continuation input:
+
+- `cursor`
 
 Outputs:
 
-- matching entries
-- pagination state
+- `matches`
+- `cursor`
+- `hasMore`
+
+When `cursor` is provided, it takes precedence over the initial search parameters.
 
 ### Extract Markdown
 
