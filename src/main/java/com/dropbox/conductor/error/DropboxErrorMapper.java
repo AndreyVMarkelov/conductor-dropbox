@@ -162,14 +162,6 @@ public final class DropboxErrorMapper {
                     return error(DropboxErrorCode.PATH_NOT_FOUND, "Dropbox path does not exist", false, operation);
                 }
 
-                if (lookup.isNotFile() || lookup.isNotFolder()) {
-                    return error(
-                            DropboxErrorCode.INVALID_INPUT,
-                            "Dropbox path has an unexpected resource type",
-                            false,
-                            operation);
-                }
-
                 if (lookup.isRestrictedContent()) {
                     return error(DropboxErrorCode.PERMISSION_DENIED, "Dropbox content is restricted", false, operation);
                 }
