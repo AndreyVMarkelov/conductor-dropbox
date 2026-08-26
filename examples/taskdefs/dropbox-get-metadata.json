@@ -1,0 +1,10 @@
+{
+  "name": "dropbox_get_metadata",
+  "description": "Get metadata for a Dropbox file or folder",
+  "retryCount": 3,
+  "retryLogic": "FIXED",
+  "retryDelaySeconds": 2,
+  "timeoutPolicy": "TIME_OUT_WF",
+  "timeoutSeconds": 60,
+  "responseTimeoutSeconds": 30
+}

@@ -26,6 +26,8 @@ public class WorkerApplication {
                                 new ExtractMarkdownAsyncStartWorker(dropbox),
                                 new ExtractMarkdownAsyncCheckWorker(dropbox),
                                 new ExtractMarkdownWorker(dropbox),
+                                new GetMetadataWorker(dropbox),
+                                new SearchWorker(dropbox),
                                 new ListFolderWorker(dropbox)))
                 .withThreadCount(2)
                 .build();
