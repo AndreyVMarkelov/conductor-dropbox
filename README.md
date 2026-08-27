@@ -4,11 +4,11 @@
 [![License](https://img.shields.io/github/license/AndreyVMarkelov/conductor-dropbox)](LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/AndreyVMarkelov/conductor-dropbox)](https://github.com/AndreyVMarkelov/conductor-dropbox/releases)
 
-Dropbox integration for Conductor and Orkes workflows.
+Dropbox integration for **Conductor OSS and Orkes**.
 
-Build durable workflows around Dropbox files, folders, search, and document processing without writing Dropbox API glue for every workflow.
-
-`conductor-dropbox` runs as an external Conductor worker and can be used with self-hosted Conductor or Orkes.
+`conductor-dropbox` is an open-source worker integration for building durable Dropbox workflows with Conductor and Orkes.
+Use Dropbox files, folders, search, metadata, and document-to-Markdown extraction as reusable workflow tasks — without implementing Dropbox API integration inside every workflow.
+It runs as an external Conductor worker and works with both self-hosted Conductor and Orkes.
 
 ![conductor-dropbox overview](docs/images/conductor-dropbox-overview.png)
 
