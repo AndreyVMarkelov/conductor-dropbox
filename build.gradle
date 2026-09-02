@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'application'
-    id 'com.diffplug.spotless' version '8.10.0'
+    id 'com.diffplug.spotless' version '8.10.1'
     id 'checkstyle'
     id 'pl.allegro.tech.build.axion-release' version '1.21.3'
 }
