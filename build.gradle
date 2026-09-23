@@ -3,7 +3,7 @@ plugins {
     id 'application'
     id 'com.diffplug.spotless' version '8.10.0'
     id 'checkstyle'
-    id 'pl.allegro.tech.build.axion-release' version '1.21.3'
+    id 'pl.allegro.tech.build.axion-release' version '1.21.4'
 }
 
 group = 'com.dropbox.conductor'
